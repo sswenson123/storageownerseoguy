@@ -21,13 +21,11 @@ Create the Gmail: **storageownerseoguy@gmail.com** (matches the domain now).
 Use it for Formspree, Search Console, and Stripe below. Keep it OFF the
 website itself — form-first, as planned.
 
-## Step 3 — Formspree (5 min)
+## Step 3 — Formspree ✅ DONE
 
-1. formspree.io → sign up with the new Gmail → New Form → name: "Free Report Requests"
-2. Copy the form ID (looks like `xabcdefg`)
-3. In `index.html`, replace `YOUR_FORM_ID` in the form action:
-   `https://formspree.io/f/YOUR_FORM_ID` → `https://formspree.io/f/xabcdefg`
-4. Free tier = 50 submissions/mo. That's 50 leads — plenty for launch.
+Form created; live endpoint `https://formspree.io/f/mojgoapk` is wired into
+index.html. Free tier = 50 submissions/mo — plenty for launch.
+After the site is live: submit the form once for real and confirm the email arrives.
 
 ## Step 4 — Photo
 
