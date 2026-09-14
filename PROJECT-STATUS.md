@@ -5,7 +5,7 @@ Last updated: July 31, 2026. READ THIS FIRST in any new conversation.
 Owns 6 self-storage facilities in MN/WI. We completed a full local-SEO overhaul of all six sites. He is now launching **"The Storage Owner's SEO Guy"** — a service selling local-SEO cleanup to other storage facility owners. This folder is that business.
 
 ## The service business (THIS folder: Self-Storage-Guy)
-- `index.html` — full sales site: hero, "3 leaks", My Story (names all 6 facilities), real findings, pricing ($997 audit+fix / $1,997 full cleanup / $99-mo maintenance / $797 per-site multi-facility), FAQ, contact form (Formspree), ProfessionalService schema
+- `index.html` — full sales site: hero, "3 leaks", My Story (names all 6 facilities), real findings, pricing (REVISED Sept 14, 2026 — Build & Maintain model: $997 Build one-time / $39-mo Maintain / $149-mo Maintain+Improve / $797 per-facility 3+; $1,997 tier and $99 Watchdog RETIRED), FAQ, contact form (Formspree), ProfessionalService schema
 - `sample-report.html` — anonymized real audit (based on farnerstorage.com test audit)
 - `css/style.css`, `README.md` (launch checklist), `images/` (waiting for scott.jpg)
 - **Pricing chosen by Scott. Name chosen by Scott. Form-first contact with new email.**
@@ -62,3 +62,11 @@ All 6 verified in Google Search Console (HTML file google2a0891b24ccff0b8.html).
 - He runs git himself: add/commit/push; knows `git pull --rebase` and `npx prettier --write src/` for Vercel lint failures
 - Vercel builds fail on prettier — always run prettier before committing to the 3 Vercel repos
 - GitHub accounts: sswenson123 (Pages sites), Car-Zumo org (Vercel sites)
+
+
+## Business model + launch progress (Sept 13-14, 2026)
+- **Model REVISED to Build & Maintain:** Scott keeps full control (builds/maintains/fixes everything); CLIENT keeps ownership (repo in their GitHub, domain in their registrar, Scott admin on both). Pricing: $997 Build ($797 ea 3+) / $39-mo Maintain (unlimited small edits, listings check, report) / $149-mo Maintain+Improve (monthly improvement, GBP posts, review engine, rank tracking). Site copy updated everywhere: "No subscriptions" replaced with "No contracts. Cancel anytime. Keep everything." Schema priceRange now $39-$997. Scott still needs NEW Stripe subscription links ($39, $149) — old $1,997/$99 links retire.
+- Site now says SEVEN facilities everywhere (matches FB post). 7th facility identity still unconfirmed in files — ask Scott (dakotaselfstoragecenter.com?). PHOTO PLACEHOLDER STILL LIVE on index (images/scott.jpg missing) — flagged repeatedly.
+- New page live-pending-push: rented-vs-owned-storage-websites.html + downloads/Rented-vs-Owned-Storage-Websites.pdf; sitemap updated; footer links added.
+- **FB guinea-pig campaign results:** TNC Storage (Green Bay/Ashwaubenon — invisible, unclaimed GBP; plan in TNC-CLIENT-PLAN.md; tncstorage.com was available) and Splitrock Storage (Finlayson MN — 5.0x50 GBP no hours, v0/Vercel site no robots/sitemap/schema, CC Storage portal, WV cell # loose in FB posts; plan in SPLITROCK-CLIENT-PLAN.md + client-facing Splitrock-Storage-SEO-Plan.pdf) = the 2 free slots. U Stuff It (Fort Collins — 4 phone numbers live, CLOSED Yelp twin, StorEdge site; full audit in UStuffIt-Visibility-Report.pdf) = first PAID pipeline prospect. Cold prospects audited: All In Mini Storage (Roseburg OR, StorEdge, name-collision competitor all-in-storage.com) and All Secure Mini Storage (Albany OR, 4.8x223 reviews on abandoned ThemeRex template site, Google says Millersburg).
+- Reusable assets created: Citation-Tracker.xlsx (all 6 facilities), Rented-vs-Owned PDF (client value-add), client-plan template (in TNC plan), client-facing plan format (Splitrock PDF), visibility-report format (UStuffIt PDF).
