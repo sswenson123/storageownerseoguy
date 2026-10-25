@@ -1,0 +1,20 @@
+# Private / internal files - keep on your computer, never publish.
+# (This repo and storageownerseoguy.com are both public.)
+.DS_Store
+*.pem
+.sosg/
+private-client-docs/
+README.md
+PROJECT-STATUS.md
+LAUNCH-RUNBOOK.md
+LESSONS-LEARNED.md
+CLIENT-ACCESS-PLAYBOOK.md
+FIRST-CALL-SCRIPT.md
+PRICING-README.md
+*-CLIENT-PLAN.md
+*-Visibility-Report.pdf
+*-SEO-Plan.pdf
+GRANT-ACCESS-GUIDE*.html
+New-Client-Signup-Checklist*.pdf
+*.docx
+*.patch
