@@ -3,7 +3,7 @@
  * Two paths share it: public signup (/signup/) and private invitations (/signup/?invite=…).
  *
  * Security model: this page decides nothing. The signup Worker (config.signupApi, code in _worker/)
- *  - freezes the exact agreement shown in Step 2, verifies the Step 1 email with a one-time code,
+ *  - freezes the exact agreement shown in Step 3, verifies the Step 2 email with a one-time code,
  *    records the typed-name signature (two separate consents + the "Sign Agreement" click) with its own
  *    timestamp, and keeps the signed PDF + append-only audit trail privately under the signup reference,
  *  - prices the order itself (public prices, verified invitation prices, Stripe-validated promo codes),
@@ -18,7 +18,7 @@
 })(this, function () {
   'use strict';
 
-  var STORAGE_KEY = 'sosg_signup_v2';
+  var STORAGE_KEY = 'sosg_signup_v3'; // v3: package → info → agreement → pay
   var MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
   var MAX_PRICE = 20000;
   // ---------- pure logic (unit-tested in tests/signup.test.js) ----------
@@ -53,7 +53,7 @@
     return /^[A-Z0-9_-]{2,40}$/.test(c) ? c : '';
   }
 
-  // Read-only preview for Step 3. The binding amounts come from the server quote on Step 4.
+  // Read-only preview for Step 1 (package). The binding amounts come from the server quote on Step 4.
   function computeSummary(order, config) {
     var buildIncluded = order.buildIncluded !== false;
     var facilities = clampFacilities(order.facilities, config.build.maxFacilities);
@@ -92,7 +92,7 @@
     function need(field, label) {
       if (!data[field] || String(data[field]).trim().length < 2) errors.push({ field: field, message: label + ' is required.' });
     }
-    if (step === 1) {
+    if (step === 2) {
       need('owner_name', 'Your full legal name');
       need('legal_name', 'Legal business name');
       need('facility_name', 'Facility name');
@@ -107,10 +107,10 @@
       else if (config && config.invite && config.invite.email && email !== config.invite.email.toLowerCase()) errors.push({ field: 'email', message: 'This private offer was issued for a different email address. Use the email Scott sent it to, or sign up at the regular prices without the invitation link.' });
       if (!data.rental_software) errors.push({ field: 'rental_software', message: 'Choose your rental software (or "None / paper").' });
       else if (data.rental_software === 'Other' && String(data.rental_software_other || '').trim().length < 2) errors.push({ field: 'rental_software_other', message: 'Tell us which rental software you use.' });
-    } else if (step === 2) {
+    } else if (step === 3) {
       if (!sign || sign.signed !== true) errors.push({ field: 'typed_name', message: 'Please sign the agreement before continuing: verify your email, type your full legal name and title, check both boxes, and click “Sign Agreement”.' });
       else if (sign.infoFingerprint && sign.infoFingerprint !== infoFingerprint(data)) errors.push({ field: 'owner_name', message: 'You changed your information after signing, so the agreement needs to be signed again with the new details.' });
-    } else if (step === 3) {
+    } else if (step === 1) {
       var s = computeSummary(data, config);
       if (s.nothingSelected) errors.push({ field: 'planId', message: 'Choose the website build, a monthly plan, or both.' });
     } else if (step === 4) {
@@ -375,7 +375,6 @@
     var restored = storage ? loadProgress(storage, Date.now(), inviteId) : null;
     if (restored && restored.data) {
       state = restored;
-      if (state.step === 4) state.step = 3; // always re-review the amounts before payment
     }
 
     fillConfigSpans(doc, config);
@@ -473,7 +472,6 @@
       var s = computeSummary(state.data, config);
       var slot = doc.getElementById('preview-slot');
       if (slot) slot.innerHTML = previewRows(s);
-      doc.getElementById('fac-count').textContent = s.facilities + (s.facilities === 1 ? ' facility' : ' facilities');
       return s;
     }
 
@@ -496,13 +494,14 @@
         '<p class="muted">Services Agreement v' + escapeHtml(config.agreementVersion) + ' signed electronically · Agreement ID ' + escapeHtml(sg.agreementId || '') + ' · Signup reference ' + escapeHtml(sg.ref || '') + '</p>';
     }
 
-    // ----- Step 2: agreement + first-party electronic signature -----
-    // The Worker freezes the exact agreement (version + SHA-256 + text) when Step 2 opens; that frozen
+    // ----- Step 3: agreement + first-party electronic signature -----
+    // The Worker freezes the exact agreement (version + SHA-256 + text) when Step 3 opens; that frozen
     // text is what is shown here and what goes into the signed PDF.
     var signStatus = doc.getElementById('sign-status');
     var emailStatus = doc.getElementById('email-status');
     var signBtn = doc.getElementById('sign-btn');
     var frozen = null;   // { agreement: {version, sha256, html}, consents }
+    var autoSentFor = null;
     var signing = false;
 
     function setText(el, t, cls) { el.textContent = t || ''; el.className = (el.className.split(' ')[0] || '') + (cls ? ' ' + cls : ''); }
@@ -520,7 +519,8 @@
       doc.getElementById('sign-form').hidden = signed || !API;
       doc.getElementById('sign-unavailable').hidden = !!API;
       doc.getElementById('sign-business').textContent = (state.data.legal_name || '') + ' — ' + (state.data.facility_name || '');
-      doc.getElementById('typed-name-hint').textContent = 'Type it exactly as in Step 1: ' + (state.data.owner_name || '');
+      doc.getElementById('typed-name-hint').textContent = 'Type your name as you entered it: ' + (state.data.owner_name || '');
+      if (!form.elements.signer_title.value) form.elements.signer_title.value = 'Owner';
       doc.getElementById('email-target').textContent = state.data.email || '';
       var verified = !!(sg && sg.emailVerified);
       doc.getElementById('email-verify-row').hidden = verified;
@@ -565,6 +565,8 @@
         if (!sameSignup) { form.elements.consent_esign.checked = false; form.elements.consent_authority.checked = false; form.elements.typed_name.value = ''; }
         if (!r.emailConfigured && !r.signed) setText(emailStatus, 'Email verification isn’t switched on yet, so online signing is unavailable. Please contact Scott at storageownerseoguy@gmail.com.', 'error');
         persist(); renderSign();
+        // signing made easy: the one-time code is emailed automatically (once per signup) when the agreement opens
+        if (state.sign && !state.sign.emailVerified && !state.sign.signed && r.emailConfigured && autoSentFor !== state.sign.ref) { autoSentFor = state.sign.ref; sendCode(); }
       }).catch(function () { panel.innerHTML = '<p class="step-errors">We couldn’t reach the signup service. Check your connection and try again.</p>'; renderSign(); });
     }
 
@@ -612,7 +614,7 @@
       if (form.elements.signer_title.value.trim().length < 2) errs.push({ field: 'signer_title', message: 'Enter your title or role.' });
       if (!form.elements.consent_esign.checked) errs.push({ field: 'consent_esign', message: 'Check the box to agree to electronic records and signatures.' });
       if (!form.elements.consent_authority.checked) errs.push({ field: 'consent_authority', message: 'Check the box to confirm you are authorized to sign.' });
-      showErrors(2, errs);
+      showErrors(3, errs);
       if (errs.length) return;
       signing = true; renderSign();
       setText(signStatus, 'Signing and saving your agreement…');
@@ -669,7 +671,10 @@
       return api('POST', '/api/order/quote', { ref: state.sign.ref, facilities: d.facilities, planId: d.planId, buildIncluded: d.buildIncluded, promoCode: config.allowPromoCodes ? d.promoCode : '' }).then(function (r) {
         if (!r.ok) {
           slot.innerHTML = '<p class="step-errors">' + escapeHtml(r.error || 'We couldn’t calculate your order.') + '</p>';
-          if (r.code === 'promo_rejected') { state.data.promoCode = ''; persist(); slot.innerHTML += '<p><button type="button" class="link-btn" data-goto="3">Back to the package step</button></p>'; }
+          if (r.code === 'promo_rejected') { // drop the code and show the order without it
+            var pm = doc.getElementById('promo-msg'); pm.textContent = r.error || 'That promo code can’t be used.'; pm.className = 'promo-msg error';
+            state.data.promoCode = ''; persist(); renderPromo(); return loadQuote();
+          }
           return;
         }
         quote = r.quote;
@@ -679,7 +684,7 @@
         btn.disabled = false;
         btn.textContent = quote.dueTodayCents > 0 ? 'Approve & Continue to Secure Payment →' : 'Approve & Submit My Signup';
         doc.getElementById('payment-note').textContent = quote.dueTodayCents > 0
-          ? 'Next you’ll go to Stripe’s secure page to pay exactly ' + cents(quote.dueTodayCents) + ' by bank account (ACH) or card. We never see your card or bank numbers.'
+          ? 'Next you’ll go to Stripe’s secure page to pay exactly ' + cents(quote.dueTodayCents) + ' by card, Apple Pay, or Link. We never see your card number.'
           : 'Nothing is charged today. Scott will confirm your start date and send your monthly billing link when service begins.';
       }).catch(function () { slot.innerHTML = '<p class="step-errors">We couldn’t reach the order service. Please try again.</p>'; });
     }
@@ -693,9 +698,9 @@
         li.classList.toggle('done', n2 < step);
         if (n2 === step) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current');
       });
-      if (step === 2) { renderSign(); ensureStarted(); }
-      if (step >= 3) renderSummary();
-      if (step === 4) { renderRecap(); loadQuote(); }
+      if (step === 1) renderSummary();
+      if (step === 3) { renderSign(); ensureStarted(); }
+      if (step === 4) { renderRecap(); renderPromo(); loadQuote(); }
       var heading = doc.querySelector('[data-step="' + step + '"] h2');
       if (heading) { heading.setAttribute('tabindex', '-1'); heading.focus(); }
       win.scrollTo(0, 0);
@@ -726,15 +731,16 @@
         var code = normalizePromoCode(input.value);
         if (!input.value.trim()) { msg.textContent = 'Type your code first.'; msg.className = 'promo-msg error'; return; }
         if (!code) { msg.textContent = 'That doesn’t look like a promo code — codes use only letters, numbers, and dashes.'; msg.className = 'promo-msg error'; return; }
+        if (!state.sign || !state.sign.signed) { msg.textContent = 'Sign the agreement first — then apply your code here.'; msg.className = 'promo-msg error'; return; }
         msg.textContent = 'Checking ' + code + '…'; msg.className = 'promo-msg';
         readForm();
         api('POST', '/api/order/quote', { ref: state.sign.ref, facilities: state.data.facilities, planId: state.data.planId, buildIncluded: state.data.buildIncluded, promoCode: code }).then(function (r) {
           if (!r.ok) { msg.textContent = r.error || 'That promo code isn’t valid.'; msg.className = 'promo-msg error'; return; }
           state.data.promoCode = code;
           input.value = '';
-          msg.textContent = 'Code ' + code + ' applied: −' + cents(r.quote.discountCents) + ' on the website build. You’ll see the exact total on the next step.';
+          msg.textContent = 'Code ' + code + ' applied: −' + cents(r.quote.discountCents) + ' on the website build.';
           msg.className = 'promo-msg ok';
-          renderPromo(); renderSummary(); persist();
+          renderPromo(); persist(); loadQuote();
         }).catch(function () { msg.textContent = 'We couldn’t check that code right now. Try again.'; msg.className = 'promo-msg error'; });
       } else if (t.id === 'promo-remove') {
         e.preventDefault();
@@ -742,7 +748,7 @@
         var m2 = doc.getElementById('promo-msg');
         m2.textContent = 'Promo code removed.';
         m2.className = 'promo-msg';
-        renderPromo(); renderSummary(); persist();
+        renderPromo(); persist(); loadQuote();
       } else if (t.id === 'clear-progress') {
         e.preventDefault();
         if (storage) clearProgress(storage, inviteId);
@@ -755,14 +761,14 @@
     });
     form.addEventListener('change', function (e) {
       readForm();
-      if (state.step === 2) renderSign();
-      if (state.step === 3) renderSummary();
+      if (state.step === 3) renderSign();
+      if (state.step === 1) renderSummary();
       if (state.step === 4 && e.target && e.target.id === 'order_approved') {
         doc.getElementById('submit-btn').disabled = !quote;
       }
       persist();
     });
-    form.addEventListener('input', function () { if (state.step === 2) renderSign(); });
+    form.addEventListener('input', function () { if (state.step === 3) renderSign(); });
     doc.getElementById('email_code').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); verifyCode(); } });
     form.addEventListener('submit', function (e) { e.preventDefault(); if (state.step < 4) next(); else submit(); });
 

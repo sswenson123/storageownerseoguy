@@ -22,23 +22,51 @@
   <main class="signup-wrap container">
     <p class="kicker">Get started</p>
     <h1 class="signup-title">Sign up in four short steps</h1>
+    <p class="muted signup-lede"><strong>1</strong> Choose your package · <strong>2</strong> Your information · <strong>3</strong> Read &amp; sign the agreement · <strong>4</strong> Pay securely</p>
     <p class="muted signup-lede">This is for buying the build. Just want to see what's wrong first? <a href="/#free-report">Get the free report</a>, no obligation.</p>
 
     <div id="invite-banner" class="invite-banner" hidden></div>
 
     <ol class="steps-progress" aria-label="Signup progress">
-      <li data-for="1"><span>1</span> Your info</li>
-      <li data-for="2"><span>2</span> Sign</li>
-      <li data-for="3"><span>3</span> Package</li>
-      <li data-for="4"><span>4</span> Approve &amp; pay</li>
+      <li data-for="1"><span>1</span> Package</li>
+      <li data-for="2"><span>2</span> Your info</li>
+      <li data-for="3"><span>3</span> Agreement</li>
+      <li data-for="4"><span>4</span> Pay</li>
     </ol>
 
     <form id="signup-form" novalidate>
       <!-- spam trap: real people never see or fill this -->
       <div class="hp" aria-hidden="true"><label>Leave this blank <input type="text" name="_gotcha" tabindex="-1" autocomplete="off"></label></div>
 
-      <!-- STEP 1 -->
+      <!-- STEP 1: package -->
       <div class="signup-step" data-step="1">
+        <h2>Choose your package</h2>
+        <div class="step-errors" role="alert" hidden></div>
+        <div class="form-row fac-row"><label for="facilities">Number of facilities *</label><select id="facilities" name="facilities"></select></div>
+
+        <label class="option-card build-card" for="buildIncluded">
+          <input type="checkbox" name="buildIncluded" id="buildIncluded" checked>
+          <span class="option-body"><strong>Website + SEO Build</strong><span class="option-price"><span id="build-price-label" data-cfg="buildPrice">$199</span> one-time, per facility</span>
+          <span class="muted">New website you own, Google profile fixed, listings cleaned up. Uncheck only if you already have a site and just want a monthly plan.</span></span>
+        </label>
+
+        <fieldset class="plan-fieldset">
+          <legend>Monthly plan <span class="muted">(billing starts when your site goes live)</span></legend>
+          <div id="plan-options"></div>
+        </fieldset>
+
+        <h3 class="summary-h">Your order (preview)</h3>
+        <div id="preview-slot"></div>
+        <p class="fine">Have a promo code? You'll enter it at payment, where you see and approve the exact amounts before anything is charged.</p>
+        <div class="agreement-upfront">
+          <strong>The agreement, up front:</strong> you own everything, no contracts, cancel the monthly anytime, <span data-cfg="guaranteeDays">60</span>-day satisfaction guarantee on the build.
+          <a href="/agreement.html" target="_blank" rel="noopener">Read the full Services Agreement</a> · <a data-agreement-pdf href="/downloads/agreements/SOSG-Services-Agreement-2026-10-29.1.pdf" download>PDF</a>
+        </div>
+        <div class="step-nav"><span></span><button type="button" class="btn btn-accent" data-next>Next: Your information →</button></div>
+      </div>
+
+      <!-- STEP 2: your information -->
+      <div class="signup-step" data-step="2" hidden>
         <h2>Your information</h2>
         <div class="step-errors" role="alert" hidden></div>
         <div class="form-row"><label for="owner_name">Your full legal name *</label><input id="owner_name" name="owner_name" autocomplete="name" required></div>
@@ -54,7 +82,6 @@
         </div>
         <div class="row-2">
           <div class="form-row"><label for="phone">Phone *</label><input id="phone" name="phone" type="tel" autocomplete="tel" required></div>
-          <div class="form-row"><label for="facilities">Number of facilities *</label><select id="facilities" name="facilities"></select></div>
         </div>
         <div class="row-2">
           <div class="form-row"><label for="email">Email *</label><input id="email" name="email" type="email" autocomplete="email" required></div>
@@ -77,12 +104,12 @@
           <div class="form-row" id="rental-other-row" hidden><label for="rental_software_other">Which software?</label><input id="rental_software_other" name="rental_software_other"></div>
         </div>
         <div class="form-row"><label for="website">Current website (if you have one)</label><input id="website" name="website" type="url" placeholder="https://"></div>
-        <div class="step-nav"><span></span><button type="button" class="btn btn-accent" data-next>Next: Agreement →</button></div>
+        <div class="step-nav"><button type="button" class="btn btn-outline" data-back>← Back</button><button type="button" class="btn btn-accent" data-next>Next: Read &amp; sign the agreement →</button></div>
       </div>
 
-      <!-- STEP 2 -->
-      <div class="signup-step" data-step="2" hidden>
-        <h2>Agreement &amp; electronic signature</h2>
+      <!-- STEP 3: read & sign -->
+      <div class="signup-step" data-step="3" hidden>
+        <h2>Read &amp; sign the agreement</h2>
         <p class="muted">Read the Website &amp; SEO Services Agreement below. Highlights: you own everything, no contracts, cancel the monthly anytime, and a <span data-cfg="guaranteeDays">60</span>-day satisfaction guarantee on the build.</p>
         <div class="step-errors" role="alert" hidden></div>
         <div id="agreement-panel" class="agreement-panel" tabindex="0" aria-label="Services Agreement text">Loading the agreement…</div>
@@ -102,7 +129,7 @@
           <fieldset class="sign-box">
             <legend>1. Confirm your email</legend>
             <div id="email-verify-row">
-              <p class="fine">We’ll email a 6-digit code to <strong id="email-target"></strong> to confirm it’s yours.</p>
+              <p class="fine">We email a 6-digit code to <strong id="email-target"></strong> to confirm it’s yours — check your inbox and enter it here.</p>
               <p><button type="button" class="btn btn-outline btn-sm" id="send-code">Email me a code</button></p>
               <div class="row-2 code-row">
                 <div class="form-row"><label for="email_code">6-digit code</label><input id="email_code" name="email_code" inputmode="numeric" autocomplete="one-time-code" maxlength="7" pattern="[0-9 ]*"></div>
@@ -138,28 +165,17 @@
           <p id="signed-detail" class="fine"></p>
           <p><button type="button" class="btn btn-outline btn-sm" id="download-signed">Download signed PDF</button> <span id="download-status" class="fine" aria-live="polite"></span></p>
           <p class="fine">A copy was also emailed to you. <span id="signed-hash" class="hash"></span></p>
-          <p class="fine">If you change your information in Step 1, you’ll be asked to sign again.</p>
+          <p class="fine">If you change your information, you’ll be asked to sign again.</p>
         </div>
-        <div class="step-nav"><button type="button" class="btn btn-outline" data-back>← Back</button><button type="button" class="btn btn-accent" data-next>Next: Package →</button></div>
+        <div class="step-nav"><button type="button" class="btn btn-outline" data-back>← Back</button><button type="button" class="btn btn-accent" data-next>Next: Payment →</button></div>
       </div>
 
-      <!-- STEP 3 -->
-      <div class="signup-step" data-step="3" hidden>
-        <h2>Choose your package</h2>
+      <!-- STEP 4: approve & pay -->
+      <div class="signup-step" data-step="4" hidden>
+        <h2>Approve your order &amp; pay</h2>
         <div class="step-errors" role="alert" hidden></div>
-        <p class="fine">For <strong id="fac-count">1 facility</strong> · <button type="button" class="link-btn" data-goto="1">change</button></p>
-
-        <label class="option-card build-card" for="buildIncluded">
-          <input type="checkbox" name="buildIncluded" id="buildIncluded" checked>
-          <span class="option-body"><strong>Website + SEO Build</strong><span class="option-price"><span id="build-price-label" data-cfg="buildPrice">$199</span> one-time, per facility</span>
-          <span class="muted">New website you own, Google profile fixed, listings cleaned up. Uncheck only if you already have a site and just want a monthly plan.</span></span>
-        </label>
-
-        <fieldset class="plan-fieldset">
-          <legend>Monthly plan <span class="muted">(billing starts when your site goes live)</span></legend>
-          <div id="plan-options"></div>
-        </fieldset>
-
+        <div id="recap" class="recap"></div>
+        <h3 class="summary-h">Your order — exact amounts</h3>
         <div id="promo-block" class="promo-block">
           <div id="promo-entry">
             <label for="promo"><strong>Have a promo code?</strong></label>
@@ -175,23 +191,11 @@
           <p id="promo-msg" class="promo-msg" aria-live="polite"></p>
         </div>
 
-        <h3 class="summary-h">Your order (preview)</h3>
-        <div id="preview-slot"></div>
-        <p class="fine">You'll see and approve the exact amounts — including any promo discount — on the next step, before anything is charged.</p>
-        <div class="step-nav"><button type="button" class="btn btn-outline" data-back>← Back</button><button type="button" class="btn btn-accent" data-next>Next: Review &amp; approve →</button></div>
-      </div>
-
-      <!-- STEP 4 -->
-      <div class="signup-step" data-step="4" hidden>
-        <h2>Approve your order &amp; pay</h2>
-        <div class="step-errors" role="alert" hidden></div>
-        <div id="recap" class="recap"></div>
-        <h3 class="summary-h">Your order — exact amounts</h3>
         <div id="quote-slot"></div>
         <h3 class="summary-h">Payment terms</h3>
         <div id="disclosure" class="disclosure"></div>
         <ul class="next-steps">
-          <li><strong>Today:</strong> you pay the one-time build fee shown above (if any) on Stripe's secure page — bank account (ACH) or card. We never see your card or bank numbers.</li>
+          <li><strong>Today:</strong> you pay the one-time build fee shown above (if any) on Stripe's secure page by card, Apple Pay, or Link. We never see your card number.</li>
           <li><strong>Next:</strong> Scott schedules your 30-minute Access Day call.</li>
           <li><strong>Launch day:</strong> your monthly plan starts and bills on that same day each month. You'll authorize it on launch day — nothing monthly is charged before then. Cancel anytime.</li>
         </ul>

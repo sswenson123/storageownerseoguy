@@ -92,17 +92,24 @@ async function shot(page, name) { await page.addStyleTag({ content: '.site-heade
 const uniq = () => crypto.randomBytes(3).toString('hex');
 async function step1(page, o = {}) {
   const v = { owner_name: 'Pat Rivera', legal_name: 'Lakeside Storage Properties LLC', facility_name: 'Lakeside Storage', street: '100 Example Rd', city: 'Anytown', state: 'MN', zip: '56401', phone: '(573) 555-0101', email: `pat-${uniq()}@example.com`, ...o };
-  for (const [k, val] of Object.entries(v)) if (k !== 'facilities') await page.fill('#' + k, val);
-  await page.fill('#email_confirm', v.email);
+  // Step 1: package (facilities + plan), Step 2: information, then Step 3: the agreement opens
+  await page.waitForSelector('[data-step="1"]:not([hidden])');
   if (o.facilities) await page.selectOption('#facilities', String(o.facilities));
-  await page.selectOption('#rental_software', 'CC Storage');
+  if (o.plan) await page.check('#plan-' + o.plan);
   await page.click('[data-step="1"] [data-next]');
   await page.waitForSelector('[data-step="2"]:not([hidden])');
+  for (const [k, val] of Object.entries(v)) if (!['facilities', 'plan'].includes(k)) await page.fill('#' + k, val);
+  await page.fill('#email_confirm', v.email);
+  await page.selectOption('#rental_software', 'CC Storage');
+  await page.click('[data-step="2"] [data-next]');
+  await page.waitForSelector('[data-step="3"]:not([hidden])');
   await page.waitForFunction(() => document.getElementById('agreement-version').textContent && /Services Agreement/.test(document.getElementById('agreement-panel').textContent));
   return v;
 }
 async function verifyEmail(page, email) {
-  await page.click('#send-code');
+  // the code is emailed automatically when the agreement opens; ask again only if that didn't happen
+  await page.waitForFunction(() => /emailed a 6-digit code|couldn’t|Too many|isn’t/.test(document.getElementById('email-status').textContent), null, { timeout: 10000 }).catch(() => {});
+  if (!/emailed a 6-digit code/.test(await page.textContent('#email-status'))) await page.click('#send-code');
   await page.waitForFunction(() => /emailed a 6-digit code/.test(document.getElementById('email-status').textContent));
   await page.fill('#email_code', latestCode(email));
   await page.click('#verify-code');
@@ -115,7 +122,7 @@ async function sign(page, name, title = 'Owner') {
   await page.check('#consent_authority');
   await page.click('#sign-btn');
 }
-const lsSign = (page) => page.evaluate(() => { for (const k of Object.keys(localStorage)) if (k.startsWith('sosg_signup_v2')) return JSON.parse(localStorage.getItem(k)).state.sign; return null; });
+const lsSign = (page) => page.evaluate(() => { for (const k of Object.keys(localStorage)) if (k.startsWith('sosg_signup_v3')) return JSON.parse(localStorage.getItem(k)).state.sign; return null; });
 async function api(method, p, body, token, origin = SITE) {
   const h = { Origin: origin, 'Content-Type': 'application/json' };
   if (token) h.Authorization = 'Bearer ' + token;
@@ -142,7 +149,7 @@ try {
   {
     const { ctx, page, errors } = await newPage();
     await page.goto(SITE + '/signup/');
-    const v = await step1(page, { facilities: 1 });
+    const v = await step1(page, { facilities: 1, plan: 'maintain' });
     const sg0 = await lsSign(page);
     const r0 = await rec(sg0.ref);
     const segment = (() => { const h = fs.readFileSync(path.join(REPO, 'agreement.html'), 'utf8'); return h.slice(h.indexOf('<div id="agreement-text">'), h.indexOf('<!-- /agreement-text -->')); })();
@@ -154,8 +161,8 @@ try {
     check('1 Download PDF serves this version’s agreement', dl0.status === 200 && pdfHref.includes(AGREEMENT.version));
     check('1 Sign Agreement disabled before email verification, typed name, title and both boxes', await page.isDisabled('#sign-btn'));
     check('1 Both consent boxes start unchecked', !(await page.isChecked('#consent_esign')) && !(await page.isChecked('#consent_authority')));
-    await page.click('[data-step="2"] [data-next]');
-    check('1 Cannot reach Step 3 unsigned', !(await page.isVisible('[data-step="3"]')));
+    await page.click('[data-step="3"] [data-next]');
+    check('1 Cannot reach payment unsigned', !(await page.isVisible('[data-step="4"]')));
     await shot(page, '1-step2-unsigned');
     await verifyEmail(page, v.email);
     check('1 Email verified with a one-time code sent to the Step 1 address', (await rec(sg0.ref)).status === 'email_verified');
@@ -189,12 +196,11 @@ try {
     const copy = [...M.S.inbox].reverse().find((m) => m.to[0] === v.email && m.attachments);
     check('1 Signed copy emailed to the verified address as a PDF attachment (same bytes)', copy && sha(Buffer.from(copy.attachments[0].content, 'base64')) === r1.pdf_sha256, copy && copy.subject);
     // Step 3 + 4
-    await page.click('[data-step="2"] [data-next]');
-    await page.check('#plan-maintain');
-    await page.fill('#promo', 'WELCOME50'); await page.click('#promo-apply');
-    await page.waitForFunction(() => /applied/.test(document.getElementById('promo-msg').textContent));
     await page.click('[data-step="3"] [data-next]');
     await page.waitForSelector('#quote-slot table');
+    await page.fill('#promo', 'WELCOME50'); await page.click('#promo-apply');
+    await page.waitForFunction(() => /applied/.test(document.getElementById('promo-msg').textContent));
+    await page.waitForFunction(() => /\$149\.00/.test(document.getElementById('quote-slot').textContent));
     check('1 Step 4 exact amounts: $199.00 − $50.00 = $149.00 today; $59.00/month from launch', (await page.textContent('#quote-slot')).includes('$149.00') && (await page.textContent('#approval-text')).includes('$149.00 today and $59.00 per month for Maintain starting the day your new website goes live'));
     await page.click('#submit-btn');
     check('1 Payment blocked until the separate exact-amount approval is checked', page.url().startsWith(SITE) && await page.isVisible('[data-step="4"] .step-errors'));
@@ -222,19 +228,18 @@ try {
   {
     const { ctx, page, errors } = await newPage({ device: 'iPhone 13' });
     await page.goto(SITE + '/signup/');
-    const v = await step1(page, { facilities: 3 });
+    const v = await step1(page, { facilities: 3, plan: 'improve' });
     await verifyEmail(page, v.email);
     await sign(page, 'pat  RIVERA', 'Managing Member');
     await page.waitForSelector('#signed-box:not([hidden])');
     await shot(page, '2-mobile-signed');
     const over = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
     check('2 Mobile: signed (name matched ignoring case/spacing), no horizontal overflow', !over && (await rec((await lsSign(page)).ref)).status === 'signed');
-    await page.click('[data-step="2"] [data-next]');
-    await page.check('#plan-improve');
-    await page.fill('#promo', 'FRIEND25'); await page.click('#promo-apply');
-    await page.waitForFunction(() => /applied/.test(document.getElementById('promo-msg').textContent));
     await page.click('[data-step="3"] [data-next]');
     await page.waitForSelector('#quote-slot table');
+    await page.fill('#promo', 'FRIEND25'); await page.click('#promo-apply');
+    await page.waitForFunction(() => /applied/.test(document.getElementById('promo-msg').textContent));
+    await page.waitForFunction(() => /\$447\.75/.test(document.getElementById('quote-slot').textContent));
     const qt = await page.textContent('#quote-slot');
     check('2 Mobile: 3 × $199 − 25% = $447.75 today; $297.00/month at launch', qt.includes('$597.00') && qt.includes('−$149.25') && qt.includes('$447.75') && qt.includes('$297.00/month'));
     await page.check('#order_approved');
@@ -401,6 +406,8 @@ try {
     const { ctx, page } = await newPage();
     await page.goto(SITE + '/signup/');
     const v = await step1(page);
+    await page.waitForFunction(() => /emailed a 6-digit code/.test(document.getElementById('email-status').textContent));
+    check('6 Opening the agreement emails the code automatically (signing made easy)', !!latestCode(v.email));
     M.S.opts.resendFail = true;
     await page.click('#send-code');
     await page.waitForFunction(() => /couldn’t send/.test(document.getElementById('email-status').textContent));
@@ -422,14 +429,14 @@ try {
     await ctx.close();
     const p2 = await newPage({ storageState });
     await p2.page.goto(SITE + '/signup/');
-    await p2.page.waitForSelector('[data-step="2"]:not([hidden])');
+    await p2.page.waitForSelector('[data-step="3"]:not([hidden])');
     await p2.page.waitForSelector('#signed-box:not([hidden])');
     check('6 Coming back later resumes the same signed agreement (no re-signing)', (await lsSign(p2.page)).ref === ref1);
     // amend Step 1 → new agreement must be signed
-    await p2.page.click('[data-step="2"] [data-back]');
+    await p2.page.click('[data-step="3"] [data-back]');
     await p2.page.fill('#legal_name', 'Lakeside Holdings LLC');
-    await p2.page.click('[data-step="1"] [data-next]');
-    await p2.page.waitForFunction((r) => { for (const k of Object.keys(localStorage)) if (k.startsWith('sosg_signup_v2')) return JSON.parse(localStorage.getItem(k)).state.sign.ref !== r; return false; }, ref1);
+    await p2.page.click('[data-step="2"] [data-next]');
+    await p2.page.waitForFunction((r) => { for (const k of Object.keys(localStorage)) if (k.startsWith('sosg_signup_v3')) return JSON.parse(localStorage.getItem(k)).state.sign.ref !== r; return false; }, ref1);
     const ref2 = (await lsSign(p2.page)).ref;
     check('6 Amended Step 1 after signing → a fresh agreement (new ref) must be signed; the old signed record is untouched', ref2 !== ref1 && (await rec(ref1)).status === 'signed' && (await rec(ref2)).status === 'awaiting_email_verification' && await p2.page.isVisible('#sign-form'));
     await p2.ctx.close();
@@ -910,8 +917,8 @@ try {
     await page.goto(SITE + '/signup/');
     await step1(page).catch(() => {});
     check('8 No Worker configured: signing form hidden, contact message shown, Step 3 unreachable', (await page.isVisible('#sign-unavailable')) && !(await page.isVisible('#sign-form')));
-    await page.click('[data-step="2"] [data-next]');
-    check('8 …and Next stays blocked', !(await page.isVisible('[data-step="3"]')));
+    await page.click('[data-step="3"] [data-next]');
+    check('8 …and Next stays blocked', !(await page.isVisible('[data-step="4"]')));
     await ctx.close();
   }
 } catch (e) {

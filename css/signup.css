@@ -27,10 +27,11 @@
 .step-nav .btn { min-height: 48px; }
 @media (max-width: 480px) { .step-nav .btn { flex: 1; text-align: center; } }
 
-.agreement-panel { max-height: 320px; overflow-y: auto; border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; background: var(--paper); font-size: .92rem; }
+.agreement-panel { max-height: 62vh; min-height: 320px; overflow-y: auto; border: 1px solid var(--line); border-radius: 8px; padding: 22px 26px; background: #fff; font-size: 1.02rem; line-height: 1.65; }
+@media (max-width: 480px) { .agreement-panel { max-height: 70vh; padding: 16px 14px; font-size: 1rem; } }
 .agreement-panel h1 { font-size: 1.2rem; margin-bottom: 6px; }
 .agreement-panel h3, #agreement-text h3 { font-size: 1rem; margin: 16px 0 6px; color: var(--ink); }
-.agreement-panel p, .agreement-panel li { margin-bottom: 8px; color: var(--ink-soft); }
+.agreement-panel p, .agreement-panel li { margin-bottom: 10px; color: var(--ink); }
 .agreement-panel ul, #agreement-text ul { margin-left: 20px; }
 .check-row { display: flex; gap: 10px; align-items: flex-start; font-weight: 700; margin: 14px 0; cursor: pointer; }
 .check-row input { width: 22px; height: 22px; margin-top: 2px; flex: none; accent-color: var(--accent); }
@@ -109,3 +110,7 @@ select:disabled { opacity: .75; }
 .ok-line { color: #1f7a4d; font-weight: 700; margin: 4px 0; }
 .code-row .btn { width: 100%; }
 .hash { display: block; word-break: break-all; color: #666; font-size: .8rem; margin-top: 4px; }
+
+.agreement-upfront { margin: 18px 0 4px; padding: 14px 16px; border: 1px solid var(--line); border-left: 4px solid var(--green); border-radius: 8px; background: var(--paper); font-size: .95rem; }
+.agreement-upfront a { font-weight: 700; }
+.fac-row { max-width: 320px; margin-bottom: 14px; }

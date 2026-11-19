@@ -75,20 +75,20 @@ test('promo: code survives a package change; totals recompute', () => {
 });
 
 test('validation: step 1 requires contact details and a valid email/zip/phone', () => {
-  const errs = S.validateStep(1, { owner_name: 'Pat', email: 'not-an-email', zip: '12', phone: '555' }, baseConfig);
+  const errs = S.validateStep(2, { owner_name: 'Pat', email: 'not-an-email', zip: '12', phone: '555' }, baseConfig);
   const fields = errs.map((e) => e.field);
   for (const f of ['facility_name', 'street', 'city', 'state', 'zip', 'phone', 'email']) assert.ok(fields.includes(f), f);
   for (const f of ['legal_name', 'rental_software']) assert.ok(fields.includes(f), f);
   const good = { owner_name: 'Pat Rivera', legal_name: 'Lakeside Storage Properties LLC', facility_name: 'Lakeside Storage', street: '100 Example Rd', city: 'Anytown', state: 'MN', zip: '56401', phone: '(218) 555-0123', email: 'pat@example.com', email_confirm: 'Pat@Example.com', rental_software: 'CC Storage' };
-  assert.deepEqual(S.validateStep(1, good, baseConfig), []);
-  assert.equal(S.validateStep(1, { ...good, email_confirm: 'pat@exampel.com' }, baseConfig)[0].field, 'email_confirm');
-  assert.equal(S.validateStep(1, { ...good, rental_software: 'Other', rental_software_other: '' }, baseConfig)[0].field, 'rental_software_other');
-  assert.deepEqual(S.validateStep(1, { ...good, rental_software: 'Other', rental_software_other: 'SpareFoot Storable' }, baseConfig), []);
+  assert.deepEqual(S.validateStep(2, good, baseConfig), []);
+  assert.equal(S.validateStep(2, { ...good, email_confirm: 'pat@exampel.com' }, baseConfig)[0].field, 'email_confirm');
+  assert.equal(S.validateStep(2, { ...good, rental_software: 'Other', rental_software_other: '' }, baseConfig)[0].field, 'rental_software_other');
+  assert.deepEqual(S.validateStep(2, { ...good, rental_software: 'Other', rental_software_other: 'SpareFoot Storable' }, baseConfig), []);
 });
 
 test('validation: step 3 blocks an empty order (no build, no plan)', () => {
-  assert.equal(S.validateStep(3, { buildIncluded: false, planId: 'none', facilities: 1 }, baseConfig).length, 1);
-  assert.equal(S.validateStep(3, { buildIncluded: true, planId: 'none', facilities: 1 }, baseConfig).length, 0);
+  assert.equal(S.validateStep(1, { buildIncluded: false, planId: 'none', facilities: 1 }, baseConfig).length, 1);
+  assert.equal(S.validateStep(1, { buildIncluded: true, planId: 'none', facilities: 1 }, baseConfig).length, 0);
 });
 
 function memStorage() {
@@ -208,9 +208,9 @@ test('invitation: bound to an email — a forwarded link fails Step 1 with a dif
   const r = await S.verifyInvite(tokenOf((await inviteFor({ for: 'Lakeside Storage', setup: '149', pay: PRIVATE, email: 'Pat@Example.com' })).url), keyed, NOW);
   const c = S.applyInvite(keyed, r.invite);
   const good = { owner_name: 'Pat Rivera', legal_name: 'Lakeside LLC', facility_name: 'Lakeside Storage', street: '1 Main', city: 'Town', state: 'MN', zip: '56401', phone: '2185550123', email: 'pat@example.com', email_confirm: 'pat@example.com', rental_software: 'CC Storage' };
-  assert.deepEqual(S.validateStep(1, good, c), []);
+  assert.deepEqual(S.validateStep(2, good, c), []);
   const fwd = { ...good, email: 'friend@other.com', email_confirm: 'friend@other.com' };
-  assert.equal(S.validateStep(1, fwd, c)[0].field, 'email');
+  assert.equal(S.validateStep(2, fwd, c)[0].field, 'email');
 });
 
 test('invitation tool refuses bad input and a mismatched key', async () => {
@@ -262,8 +262,8 @@ const INFO = { owner_name: 'Pat Rivera', legal_name: 'Lakeside LLC', facility_na
 
 test('step 2: changing Step 1 details after signing requires signing again', () => {
   const sign = { signed: true, infoFingerprint: S.infoFingerprint(INFO) };
-  assert.equal(S.validateStep(2, { ...INFO, legal_name: 'Other LLC' }, baseConfig, sign).length, 1);
-  assert.deepEqual(S.validateStep(2, { ...INFO, email: 'PAT@example.com ' }, baseConfig, sign), [], 'case/whitespace only is not a change');
+  assert.equal(S.validateStep(3, { ...INFO, legal_name: 'Other LLC' }, baseConfig, sign).length, 1);
+  assert.deepEqual(S.validateStep(3, { ...INFO, email: 'PAT@example.com ' }, baseConfig, sign), [], 'case/whitespace only is not a change');
 });
 
 test('step 4: requires the separate approval of the exact order amounts', () => {
@@ -299,9 +299,9 @@ test('Formspree heads-up: signup ref, agreement ID, signed time, approved amount
 });
 
 test('step 2: cannot continue without a server-confirmed signature', () => {
-  assert.equal(S.validateStep(2, INFO, baseConfig, null)[0].field, 'typed_name');
-  assert.equal(S.validateStep(2, INFO, baseConfig, { signed: false })[0].field, 'typed_name');
-  assert.deepEqual(S.validateStep(2, INFO, baseConfig, { signed: true, infoFingerprint: S.infoFingerprint(INFO) }), []);
+  assert.equal(S.validateStep(3, INFO, baseConfig, null)[0].field, 'typed_name');
+  assert.equal(S.validateStep(3, INFO, baseConfig, { signed: false })[0].field, 'typed_name');
+  assert.deepEqual(S.validateStep(3, INFO, baseConfig, { signed: true, infoFingerprint: S.infoFingerprint(INFO) }), []);
 });
 
 test('no outside e-signature provider remains in the signup (code, page, styles, agreement)', () => {
