@@ -4,6 +4,7 @@
 *.pem
 .sosg/
 private-client-docs/
+_docs/
 README.md
 PROJECT-STATUS.md
 LAUNCH-RUNBOOK.md
@@ -18,3 +19,5 @@ GRANT-ACCESS-GUIDE*.html
 New-Client-Signup-Checklist*.pdf
 *.docx
 *.patch
+node_modules/
+_worker/test/output/

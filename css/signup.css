@@ -1,0 +1,111 @@
+/* Signup + agreement pages. Builds on css/style.css variables. */
+.signup-wrap { max-width: 720px; padding-top: 40px; padding-bottom: 70px; }
+.signup-title { font-size: clamp(1.7rem, 4vw, 2.3rem); margin-bottom: 22px; }
+.muted { color: var(--ink-soft); }
+.fine { font-size: .88rem; color: var(--ink-soft); margin: 8px 0 14px; }
+
+.steps-progress { list-style: none; display: flex; gap: 6px; margin-bottom: 22px; counter-reset: none; }
+.steps-progress li { flex: 1; font-size: .82rem; font-weight: 700; color: var(--ink-soft); border-top: 4px solid var(--line); padding-top: 8px; }
+.steps-progress li span { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: var(--line); color: var(--ink); font-size: .75rem; margin-right: 4px; }
+.steps-progress li.done { border-top-color: var(--green); }
+.steps-progress li.done span { background: var(--green); color: #fff; }
+.steps-progress li.current { border-top-color: var(--accent); color: var(--ink); }
+.steps-progress li.current span { background: var(--accent); color: #fff; }
+@media (max-width: 480px) { .steps-progress li { font-size: 0; } .steps-progress li span { font-size: .75rem; } }
+
+.signup-step, .signup-done { background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); padding: 30px; }
+@media (max-width: 480px) { .signup-step, .signup-done { padding: 20px 16px; } }
+.signup-step h2 { font-size: 1.45rem; margin-bottom: 14px; outline: none; }
+.row-2, .row-3 { display: grid; gap: 0 14px; grid-template-columns: 1fr 1fr; }
+.row-3 { grid-template-columns: 2fr 1fr 1fr; }
+@media (max-width: 560px) { .row-2, .row-3 { grid-template-columns: 1fr; } }
+.form-row input[aria-invalid="true"] { border-color: var(--accent-dark); background: #fff6f3; }
+
+.step-errors { background: #fde5dd; border: 1px solid #f3b9a6; color: var(--accent-dark); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-size: .95rem; }
+.step-errors ul { margin: 4px 0 0 18px; }
+.step-nav { display: flex; justify-content: space-between; gap: 12px; margin-top: 22px; flex-wrap: wrap; }
+.step-nav .btn { min-height: 48px; }
+@media (max-width: 480px) { .step-nav .btn { flex: 1; text-align: center; } }
+
+.agreement-panel { max-height: 320px; overflow-y: auto; border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; background: var(--paper); font-size: .92rem; }
+.agreement-panel h1 { font-size: 1.2rem; margin-bottom: 6px; }
+.agreement-panel h3, #agreement-text h3 { font-size: 1rem; margin: 16px 0 6px; color: var(--ink); }
+.agreement-panel p, .agreement-panel li { margin-bottom: 8px; color: var(--ink-soft); }
+.agreement-panel ul, #agreement-text ul { margin-left: 20px; }
+.check-row { display: flex; gap: 10px; align-items: flex-start; font-weight: 700; margin: 14px 0; cursor: pointer; }
+.check-row input { width: 22px; height: 22px; margin-top: 2px; flex: none; accent-color: var(--accent); }
+.check-row.small { font-weight: 500; font-size: .9rem; color: var(--ink-soft); }
+
+.option-card { display: flex; gap: 12px; align-items: flex-start; border: 1.5px solid var(--line); border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; cursor: pointer; background: var(--paper); }
+.option-card:has(input:checked) { border-color: var(--accent); background: #fff6f3; }
+.option-card input { width: 20px; height: 20px; margin-top: 3px; flex: none; accent-color: var(--accent); }
+.option-body { display: flex; flex-direction: column; gap: 2px; }
+.option-price { font-weight: 800; color: var(--ink); }
+.build-card .muted { font-size: .88rem; }
+.plan-fieldset { border: none; margin: 6px 0 10px; }
+.plan-fieldset legend { font-weight: 700; font-size: .95rem; margin-bottom: 8px; }
+
+.promo-block { border-top: 1px dashed var(--line); margin-top: 14px; padding-top: 14px; }
+.promo-row { display: flex; gap: 10px; margin-top: 6px; }
+.promo-row input { flex: 1; min-width: 0; padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 8px; font-size: 1rem; text-transform: uppercase; background: var(--paper); font-family: inherit; }
+.promo-row .btn { padding: 10px 16px; white-space: nowrap; }
+.promo-chip { display: flex; justify-content: space-between; align-items: center; background: #ddf0e5; color: var(--green); border-radius: 8px; padding: 10px 14px; font-weight: 600; }
+.link-btn { background: none; border: none; color: var(--accent-dark); font-weight: 700; text-decoration: underline; cursor: pointer; font-size: .95rem; padding: 6px; }
+.promo-msg { font-size: .9rem; margin-top: 8px; color: var(--ink-soft); min-height: 1em; }
+.promo-msg.ok { color: var(--green); }
+.promo-msg.error { color: var(--accent-dark); }
+
+.summary-h { font-size: 1.05rem; margin: 22px 0 8px; }
+.order-summary { width: 100%; border-collapse: collapse; font-size: .95rem; margin: 6px 0 4px; }
+.order-summary td { padding: 9px 4px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.order-summary td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+.recap p { margin-bottom: 8px; }
+.next-steps { margin: 16px 0 0 20px; color: var(--ink-soft); font-size: .93rem; }
+.next-steps li { margin-bottom: 6px; }
+.payment-note { margin-top: 14px; font-size: .93rem; background: var(--paper); border-left: 4px solid var(--accent); padding: 10px 14px; border-radius: 0 8px 8px 0; }
+.submit-status { margin-top: 10px; font-weight: 600; min-height: 1em; }
+.btn[disabled] { opacity: .6; cursor: progress; }
+
+.agreement-page { max-width: 820px; padding-top: 40px; padding-bottom: 60px; }
+.agreement-title { font-size: 2rem; margin-bottom: 6px; }
+#agreement-text p, #agreement-text li { color: var(--ink-soft); margin-bottom: 10px; }
+
+/* Public signup additions */
+.signup-lede { margin: -10px 0 18px; font-size: .95rem; }
+.hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+.invite-banner { background: #ddf0e5; border: 1px solid #b7dcc6; color: #155c3b; border-radius: 10px; padding: 12px 16px; margin-bottom: 18px; font-size: .95rem; }
+.invite-banner.warn { background: #fdf1dc; border-color: #f1d49a; color: #7a4f06; }
+.checklist { margin: 8px 0 18px 20px; color: var(--ink-soft); }
+.checklist li { margin-bottom: 6px; }
+.signup-done h2 { font-size: 1.2rem; margin: 18px 0 6px; }
+select:disabled { opacity: .75; }
+.disclosure { background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 10px 16px; font-size: .93rem; }
+.disclosure ul { margin-left: 18px; }
+.disclosure li { margin: 4px 0; color: var(--ink); }
+
+/* ---- Step 2: electronic signing ---- */
+.agreement-tools { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 10px 0 18px; }
+.btn-sm { padding: 8px 14px; font-size: 0.92rem; }
+.esign-consent { border: 1px solid #d8d2c4; background: #fff; border-radius: 10px; padding: 14px 16px; margin: 8px 0 12px; }
+.esign-consent h3 { margin: 0 0 6px; font-size: 1rem; }
+.esign-consent p { font-size: 0.92rem; margin: 0 0 10px; }
+.sign-status { font-weight: 600; }
+.signed-box { border: 2px solid #1f7a4d; background: #eef8f2; border-radius: 10px; padding: 14px 16px; margin: 8px 0 16px; }
+.signed-title { color: #1f7a4d; font-weight: 700; font-size: 1.1rem; margin: 0 0 4px; }
+.approve-row { border: 2px solid #e4572e; border-radius: 10px; padding: 12px 14px; background: #fff; margin: 14px 0; }
+
+@media print {
+  .site-header, .site-footer, .no-print, .agreement-actions { display: none !important; }
+  body { background: #fff; }
+}
+/* buttons/boxes toggled with the hidden attribute must really disappear (.btn sets display) */
+.signup-wrap [hidden] { display: none !important; }
+
+/* first-party typed signature */
+.sign-form h3 { margin: 18px 0 6px; }
+.sign-box { border: 1px solid #d8d2c4; border-radius: 10px; padding: 12px 14px 6px; margin: 0 0 12px; background: #fff; }
+.sign-box legend { font-weight: 700; padding: 0 6px; }
+.typed-signature { font-family: "Brush Script MT", "Segoe Script", "Lucida Handwriting", cursive; font-size: 1.35rem; }
+.ok-line { color: #1f7a4d; font-weight: 700; margin: 4px 0; }
+.code-row .btn { width: 100%; }
+.hash { display: block; word-break: break-all; color: #666; font-size: .8rem; margin-top: 4px; }

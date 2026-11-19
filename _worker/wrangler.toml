@@ -1,0 +1,90 @@
+# Signup Worker — see _docs/ESIGN-SETUP.md. Nothing in this file is secret.
+# Secrets are added with `npx wrangler secret put NAME` (never in this file):
+#   OTP_SECRET (random 32+ chars), RESEND_API_KEY, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET
+name = "sosg-signup"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+workers_dev = true
+# Cloudflare account id (an id, not a secret). Worker URL: https://sosg-signup.wi64storage.workers.dev
+account_id = "71a770afdecff026ed09260783a277e4"
+
+# Records + append-only audit trail. Created 2026-10-24 (ENAM); migrations 0001–0003 applied.
+# New migrations later: npx wrangler d1 migrations apply sosg-signups --remote
+[[d1_databases]]
+binding = "DB"
+database_name = "sosg-signups"
+database_id = "5f1aeb9b-04c9-4854-b73b-40a8e48837f6"
+migrations_dir = "migrations"
+
+# Signed PDFs. PRIVATE bucket — never enable public access or a custom domain on it.
+# Created 2026-10-24 (ENAM): r2.dev access OFF, no custom domain, no CORS. Keep it that way.
+[[r2_buckets]]
+binding = "AGREEMENTS"
+bucket_name = "sosg-signed-agreements"
+
+# Hourly: (1) email the monthly-billing link for launches you recorded, (2) delete abandoned, unsigned
+# signups older than UNSIGNED_RETENTION_DAYS (signed agreements are never deleted).
+[triggers]
+crons = ["17 * * * *"]
+
+[vars]
+# PRODUCTION (live Stripe). The Worker refuses live keys if any test-phase address is left here.
+ALLOWED_ORIGINS = "https://storageownerseoguy.com,https://www.storageownerseoguy.com"
+SITE_URL = "https://storageownerseoguy.com"
+ALLOW_LAN_TEST_ORIGINS = "false"
+# Controlled launch: until SIGNUP_OPEN = "true", only these addresses can start a signup (everyone else is
+# told online signup opens soon). Open to the public by changing SIGNUP_OPEN and redeploying.
+SIGNUP_OPEN = "false"
+SIGNUP_ALLOWLIST = "storageownerseoguy@gmail.com"
+AGREEMENT_VERSION = "2026-10-29.1"
+
+# Email codes + signed copies are sent with Resend from a verified domain.
+EMAIL_FROM = "The Storage Owner's SEO Guy <signup@storageownerseoguy.com>"
+EMAIL_REPLY_TO = "storageownerseoguy@gmail.com"
+# You get a short notice here for each confirmed signup and each started monthly plan
+OWNER_NOTIFY_EMAIL = "storageownerseoguy@gmail.com"
+
+# Stripe — LIVE ids, account "Self Storage SEO Guy" (acct_1UU5DkJQXhN0M8vu). Build + Maintain + Improve reuse the
+# products from the earlier direct payment links (unchanged); Maintain $59 was added. Check them any time: /api/health?stripe=1
+STRIPE_PRODUCT_BUILD = "prod_VXANPEvaeAGfRy"
+STRIPE_PRICE_BUILD = "price_1UW62KJQXhN0M8vuOg2wz7QD"
+ALLOW_PROMO_CODES = "true"
+# Monthly plans (billed only after launch, from the link the Worker emails)
+STRIPE_PRODUCT_MAINTAIN = "prod_VexZSm8eq01Wt6"
+STRIPE_PRODUCT_IMPROVE = "prod_VZgYjnyF7MZSLe"
+STRIPE_PRICE_MAINTAIN = "price_1UddeKJQXhN0M8vuGDrNcNJM"
+STRIPE_PRICE_IMPROVE = "price_1UYXB5JQXhN0M8vu6v6b0hAN"
+# Stripe-hosted billing portal: card, invoices, plan switch (no proration; downgrades at period end), cancel at period end
+STRIPE_PORTAL_CONFIG = "bpc_1UddhoJQXhN0M8vubPlJjpPQ"
+# Sandbox ids (testing): build prod_VZl0nCPW0JaAz6 / price_1UYbVCR1E0r1d2VCcFrvS6Da, maintain prod_VZl1kQkfKnSB1h /
+# price_1UYdDoR1E0r1d2VC9wsh6zvB, improve prod_VZl1r1jrdKth91 / price_1UYdE4R1E0r1d2VCTU2iGd2Q, portal bpc_1UYdH7R1E0r1d2VCYJXOz3Fj
+
+# Prices in cents — must match js/signup-config.js and index.html
+BUILD_PRICE_CENTS = "19900"
+MAINTAIN_PRICE_CENTS = "5900"
+IMPROVE_PRICE_CENTS = "9900"
+MAX_FACILITIES = "7"
+
+# Abuse limits
+MAX_STARTS_PER_IP_PER_DAY = "10"
+MAX_CODES_PER_15_MIN = "3"
+MAX_CODES_PER_SIGNUP_PER_DAY = "6"
+MAX_CODES_PER_EMAIL_PER_DAY = "8"
+MAX_CODES_PER_IP_PER_DAY = "20"
+MAX_EMAILS_PER_DAY = "50"          # codes + launch billing links  ┐
+MAX_NOTICE_EMAILS_PER_DAY = "30"   # welcome / receipts / notices  ├ Resend free plan: 100/day in total
+MAX_BILLING_LINKS_PER_DAY = "10"   # billing-portal links          │
+MAX_CODE_ATTEMPTS = "5"
+MAX_COPY_REQUESTS_PER_IP_PER_DAY = "10"
+MAX_COPIES_PER_EMAIL_PER_DAY = "3"
+MAX_COPY_EMAILS_PER_DAY = "10"     # signed-copy requests          ┘
+
+# Access + retention
+TOKEN_TTL_DAYS = "30"
+UNSIGNED_RETENTION_DAYS = "30"
+BILLING_LINK_TTL_DAYS = "14"
+# Daily records snapshot to backups/d1/YYYY-MM-DD.json in the private bucket, at this UTC hour
+BACKUP_HOUR_UTC = "7"
+
+# Public key that checks private invitations — set by: node _tools/make-invite.js --init-keys
+INVITE_PUBLIC_JWK = ""

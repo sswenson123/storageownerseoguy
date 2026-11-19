@@ -1,0 +1,7 @@
+# GitHub Pages (Jekyll): folders starting with _ are never published. Also keep these off the site:
+exclude:
+  - README.md
+  - tests
+  - package.json
+  - package-lock.json
+  - node_modules

@@ -114,3 +114,22 @@ details p { margin-top: 10px; color: var(--ink-soft); }
 .tag { display: inline-block; font-size: .7rem; font-weight: 800; letter-spacing: .08em; padding: 3px 10px; border-radius: 20px; margin-bottom: 8px; text-transform: uppercase; }
 .tag-red { background: #fde5dd; color: var(--accent-dark); }
 .tag-green { background: #ddf0e5; color: var(--green); }
+
+/* Sign Up buttons */
+.btn-nav { padding: 9px 16px; font-size: .92rem; }
+.btn-light { background: #fff; color: var(--ink) !important; }
+.btn-light:hover { background: #ffe9e1; }
+.cta-split { display: flex; gap: 12px; flex-wrap: wrap; }
+.cta-split .btn { flex: 1 1 220px; text-align: center; }
+.cta-explain { font-size: .9rem; color: var(--ink-soft); margin-top: 10px; }
+.hero .cta-explain { color: #9fb0c4; margin: -18px 0 30px; }
+@media (max-width: 560px) {
+  .nav-wrap { gap: 8px; }
+  .main-nav { flex: none; }
+  .brand { font-size: .9rem; line-height: 1.15; }
+  .main-nav { gap: 6px; }
+  .main-nav .btn { padding: 8px 10px; font-size: .82rem; white-space: nowrap; }
+  .brand { min-width: 0; }
+  .hide-sm { display: none; }
+}
+@media (max-width: 360px) { .brand { font-size: .8rem; } .main-nav .btn { padding: 7px 8px; font-size: .78rem; } }

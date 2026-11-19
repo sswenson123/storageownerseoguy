@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Start Your Monthly Plan | The Storage Owner's SEO Guy</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/signup.css">
+</head>
+<body data-page="monthly">
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a class="brand" href="/">The Storage Owner's <span>SEO Guy</span></a>
+      <nav class="main-nav"><a href="/#pricing">Pricing</a><a href="/#faq">FAQ</a></nav>
+    </div>
+  </header>
+
+  <main class="signup-wrap container">
+    <p class="kicker">Launch day</p>
+    <h1 class="signup-title">Start your monthly plan</h1>
+    <div class="signup-step" id="monthly-box">
+      <div class="step-errors" role="alert" hidden></div>
+      <p id="monthly-loading" class="muted">Loading your plan…</p>
+      <div id="monthly-ready" hidden>
+        <p>Your new website for <strong id="m-facility"></strong> is live<span id="m-site"></span>. Your monthly plan starts today, as agreed.</p>
+        <table class="order-summary"><tbody>
+          <tr><td id="m-plan"></td><td id="m-unit"></td></tr>
+          <tr><td><strong>Monthly total</strong></td><td><strong id="m-total"></strong></td></tr>
+          <tr><td>First charge</td><td>today, then the same day each month</td></tr>
+          <tr><td>Cancel</td><td>anytime, effective at the end of the billing month</td></tr>
+        </tbody></table>
+        <label class="check-row"><input type="checkbox" id="monthly_approved"> <span id="m-approval"></span></label>
+        <p><button type="button" class="btn btn-accent" id="monthly-btn" disabled>Continue to secure payment</button></p>
+        <p class="fine">Payment is handled by Stripe. Agreement <span id="m-agreement"></span>.</p>
+      </div>
+      <div id="monthly-done" hidden>
+        <p class="ok-line" id="monthly-done-line">&#10003; Your monthly plan is set up.</p>
+        <p>Stripe emails your receipt. Thank you!</p>
+        <p><button type="button" class="btn btn-outline" id="manage-billing">Manage plan, card &amp; invoices</button></p>
+        <p class="fine">Switch between Maintain ($59) and Maintain + Improve ($99) per facility anytime at no charge — the new price starts on your next billing date. Cancel anytime, effective at the end of the billing month.</p>
+      </div>
+      <p id="monthly-status" class="sign-status" aria-live="polite"></p>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-flex">
+      <div><strong style="color:#fff;">The Storage Owner's SEO Guy</strong><br>Local SEO cleanup for independent storage facilities — by an owner of seven.</div>
+      <div><a href="/agreement.html">Services Agreement</a><br>© 2026 · No contracts. Cancel anytime. Keep everything.</div>
+    </div>
+  </footer>
+  <script src="/js/signup-config.js"></script>
+  <script src="/js/records.js"></script>
+</body>
+</html>

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign Up | The Storage Owner's SEO Guy</title>
+  <meta name="description" content="Sign up for a $199 storage facility website + local SEO build, with optional monthly maintenance. No contracts. You own everything.">
+  <!-- noindex until you approve the signup for the public -->
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="canonical" href="https://storageownerseoguy.com/signup/">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/signup.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a class="brand" href="/">The Storage Owner's <span>SEO Guy</span></a>
+      <nav class="main-nav"><a href="/#pricing">Pricing</a><a href="/#faq">FAQ</a><a class="btn btn-outline btn-nav" href="/#free-report"><span class="hide-sm">Get a </span>Free Report</a></nav>
+    </div>
+  </header>
+
+  <main class="signup-wrap container">
+    <p class="kicker">Get started</p>
+    <h1 class="signup-title">Sign up in four short steps</h1>
+    <p class="muted signup-lede">This is for buying the build. Just want to see what's wrong first? <a href="/#free-report">Get the free report</a>, no obligation.</p>
+
+    <div id="invite-banner" class="invite-banner" hidden></div>
+
+    <ol class="steps-progress" aria-label="Signup progress">
+      <li data-for="1"><span>1</span> Your info</li>
+      <li data-for="2"><span>2</span> Sign</li>
+      <li data-for="3"><span>3</span> Package</li>
+      <li data-for="4"><span>4</span> Approve &amp; pay</li>
+    </ol>
+
+    <form id="signup-form" novalidate>
+      <!-- spam trap: real people never see or fill this -->
+      <div class="hp" aria-hidden="true"><label>Leave this blank <input type="text" name="_gotcha" tabindex="-1" autocomplete="off"></label></div>
+
+      <!-- STEP 1 -->
+      <div class="signup-step" data-step="1">
+        <h2>Your information</h2>
+        <div class="step-errors" role="alert" hidden></div>
+        <div class="form-row"><label for="owner_name">Your full legal name *</label><input id="owner_name" name="owner_name" autocomplete="name" required></div>
+        <div class="row-2">
+          <div class="form-row"><label for="legal_name">Legal business name *</label><input id="legal_name" name="legal_name" autocomplete="organization" placeholder="e.g. Smith Storage LLC" required></div>
+          <div class="form-row"><label for="facility_name">Facility name *</label><input id="facility_name" name="facility_name" placeholder="What renters see on the sign" required></div>
+        </div>
+        <div class="form-row"><label for="street">Facility street address *</label><input id="street" name="street" autocomplete="address-line1" required></div>
+        <div class="row-3">
+          <div class="form-row"><label for="city">City *</label><input id="city" name="city" autocomplete="address-level2" required></div>
+          <div class="form-row"><label for="state">State *</label><input id="state" name="state" autocomplete="address-level1" maxlength="20" required></div>
+          <div class="form-row"><label for="zip">ZIP *</label><input id="zip" name="zip" autocomplete="postal-code" inputmode="numeric" required></div>
+        </div>
+        <div class="row-2">
+          <div class="form-row"><label for="phone">Phone *</label><input id="phone" name="phone" type="tel" autocomplete="tel" required></div>
+          <div class="form-row"><label for="facilities">Number of facilities *</label><select id="facilities" name="facilities"></select></div>
+        </div>
+        <div class="row-2">
+          <div class="form-row"><label for="email">Email *</label><input id="email" name="email" type="email" autocomplete="email" required></div>
+          <div class="form-row"><label for="email_confirm">Confirm email *</label><input id="email_confirm" name="email_confirm" type="email" autocomplete="email" required></div>
+        </div>
+        <div class="row-2">
+          <div class="form-row"><label for="rental_software">Rental / billing software *</label>
+            <select id="rental_software" name="rental_software">
+              <option value="">Choose one…</option>
+              <option>CC Storage</option>
+              <option>StorEdge</option>
+              <option>SiteLink</option>
+              <option>Storable Easy</option>
+              <option>Yardi Breeze</option>
+              <option>Tenant Inc</option>
+              <option>Other</option>
+              <option>None / paper</option>
+            </select>
+          </div>
+          <div class="form-row" id="rental-other-row" hidden><label for="rental_software_other">Which software?</label><input id="rental_software_other" name="rental_software_other"></div>
+        </div>
+        <div class="form-row"><label for="website">Current website (if you have one)</label><input id="website" name="website" type="url" placeholder="https://"></div>
+        <div class="step-nav"><span></span><button type="button" class="btn btn-accent" data-next>Next: Agreement →</button></div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="signup-step" data-step="2" hidden>
+        <h2>Agreement &amp; electronic signature</h2>
+        <p class="muted">Read the Website &amp; SEO Services Agreement below. Highlights: you own everything, no contracts, cancel the monthly anytime, and a <span data-cfg="guaranteeDays">60</span>-day satisfaction guarantee on the build.</p>
+        <div class="step-errors" role="alert" hidden></div>
+        <div id="agreement-panel" class="agreement-panel" tabindex="0" aria-label="Services Agreement text">Loading the agreement…</div>
+        <p class="agreement-tools">
+          <a class="btn btn-outline btn-sm" data-agreement-pdf href="/downloads/agreements/SOSG-Services-Agreement-2026-10-29.1.pdf" download>Download PDF</a>
+          <button type="button" class="btn btn-outline btn-sm" id="print-agreement">Print</button>
+          <a href="/agreement.html" target="_blank" rel="noopener">Open in a new tab</a>
+          <span class="fine">Version <span id="agreement-version" data-cfg="agreementVersion">2026-10-29.1</span></span>
+        </p>
+
+        <p id="sign-unavailable" class="sign-status" hidden>Online signing isn’t switched on yet. Please call or email Scott at <a href="mailto:storageownerseoguy@gmail.com">storageownerseoguy@gmail.com</a> and he’ll send your agreement.</p>
+
+        <div id="sign-form" class="sign-form">
+          <h3>Sign the agreement</h3>
+          <p class="fine">Signing for: <strong id="sign-business"></strong></p>
+
+          <fieldset class="sign-box">
+            <legend>1. Confirm your email</legend>
+            <div id="email-verify-row">
+              <p class="fine">We’ll email a 6-digit code to <strong id="email-target"></strong> to confirm it’s yours.</p>
+              <p><button type="button" class="btn btn-outline btn-sm" id="send-code">Email me a code</button></p>
+              <div class="row-2 code-row">
+                <div class="form-row"><label for="email_code">6-digit code</label><input id="email_code" name="email_code" inputmode="numeric" autocomplete="one-time-code" maxlength="7" pattern="[0-9 ]*"></div>
+                <div class="form-row"><label>&nbsp;</label><button type="button" class="btn btn-outline" id="verify-code">Verify code</button></div>
+              </div>
+            </div>
+            <p id="email-verified" class="ok-line" hidden>&#10003; Email address confirmed</p>
+            <p id="email-status" class="promo-msg" aria-live="polite"></p>
+          </fieldset>
+
+          <fieldset class="sign-box">
+            <legend>2. Type your signature</legend>
+            <div class="row-2">
+              <div class="form-row"><label for="typed_name">Full legal name *</label><input id="typed_name" name="typed_name" autocomplete="off" spellcheck="false" class="typed-signature"><span id="typed-name-hint" class="fine"></span></div>
+              <div class="form-row"><label for="signer_title">Your title or role *</label><input id="signer_title" name="signer_title" placeholder="Owner, Member, President…" autocomplete="organization-title"></div>
+            </div>
+          </fieldset>
+
+          <fieldset class="sign-box">
+            <legend>3. Agree</legend>
+            <label class="check-row"><input type="checkbox" name="consent_esign" id="consent_esign"> <span id="consent-esign-text">I agree to use electronic records and electronic signatures.</span></label>
+            <label class="check-row"><input type="checkbox" name="consent_authority" id="consent_authority"> <span id="consent-authority-text">I am authorized to sign for this business.</span></label>
+            <label class="check-row small"><input type="checkbox" name="marketing_opt_out" id="marketing_opt_out"> Please don't use my business name or results in your marketing (Section 11).</label>
+          </fieldset>
+
+          <p><button type="button" class="btn btn-accent" id="sign-btn" disabled>Sign Agreement</button></p>
+          <p class="fine">Clicking “Sign Agreement” signs the agreement shown above with the name you typed. It is your electronic signature, the same as signing on paper.</p>
+        </div>
+        <p id="sign-status" class="sign-status" aria-live="polite"></p>
+
+        <div id="signed-box" class="signed-box" hidden>
+          <p class="signed-title">&#10003; Agreement signed</p>
+          <p id="signed-detail" class="fine"></p>
+          <p><button type="button" class="btn btn-outline btn-sm" id="download-signed">Download signed PDF</button> <span id="download-status" class="fine" aria-live="polite"></span></p>
+          <p class="fine">A copy was also emailed to you. <span id="signed-hash" class="hash"></span></p>
+          <p class="fine">If you change your information in Step 1, you’ll be asked to sign again.</p>
+        </div>
+        <div class="step-nav"><button type="button" class="btn btn-outline" data-back>← Back</button><button type="button" class="btn btn-accent" data-next>Next: Package →</button></div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="signup-step" data-step="3" hidden>
+        <h2>Choose your package</h2>
+        <div class="step-errors" role="alert" hidden></div>
+        <p class="fine">For <strong id="fac-count">1 facility</strong> · <button type="button" class="link-btn" data-goto="1">change</button></p>
+
+        <label class="option-card build-card" for="buildIncluded">
+          <input type="checkbox" name="buildIncluded" id="buildIncluded" checked>
+          <span class="option-body"><strong>Website + SEO Build</strong><span class="option-price"><span id="build-price-label" data-cfg="buildPrice">$199</span> one-time, per facility</span>
+          <span class="muted">New website you own, Google profile fixed, listings cleaned up. Uncheck only if you already have a site and just want a monthly plan.</span></span>
+        </label>
+
+        <fieldset class="plan-fieldset">
+          <legend>Monthly plan <span class="muted">(billing starts when your site goes live)</span></legend>
+          <div id="plan-options"></div>
+        </fieldset>
+
+        <div id="promo-block" class="promo-block">
+          <div id="promo-entry">
+            <label for="promo"><strong>Have a promo code?</strong></label>
+            <div class="promo-row">
+              <input id="promo" name="promo" placeholder="Enter promo code" autocomplete="off" autocapitalize="characters" maxlength="40">
+              <button class="btn btn-outline" id="promo-apply" type="button">Apply Code</button>
+            </div>
+          </div>
+          <div id="promo-chip" class="promo-chip" hidden>
+            <span>Promo code <strong id="promo-chip-code"></strong></span>
+            <button type="button" id="promo-remove" class="link-btn">Remove</button>
+          </div>
+          <p id="promo-msg" class="promo-msg" aria-live="polite"></p>
+        </div>
+
+        <h3 class="summary-h">Your order (preview)</h3>
+        <div id="preview-slot"></div>
+        <p class="fine">You'll see and approve the exact amounts — including any promo discount — on the next step, before anything is charged.</p>
+        <div class="step-nav"><button type="button" class="btn btn-outline" data-back>← Back</button><button type="button" class="btn btn-accent" data-next>Next: Review &amp; approve →</button></div>
+      </div>
+
+      <!-- STEP 4 -->
+      <div class="signup-step" data-step="4" hidden>
+        <h2>Approve your order &amp; pay</h2>
+        <div class="step-errors" role="alert" hidden></div>
+        <div id="recap" class="recap"></div>
+        <h3 class="summary-h">Your order — exact amounts</h3>
+        <div id="quote-slot"></div>
+        <h3 class="summary-h">Payment terms</h3>
+        <div id="disclosure" class="disclosure"></div>
+        <ul class="next-steps">
+          <li><strong>Today:</strong> you pay the one-time build fee shown above (if any) on Stripe's secure page — bank account (ACH) or card. We never see your card or bank numbers.</li>
+          <li><strong>Next:</strong> Scott schedules your 30-minute Access Day call.</li>
+          <li><strong>Launch day:</strong> your monthly plan starts and bills on that same day each month. You'll authorize it on launch day — nothing monthly is charged before then. Cancel anytime.</li>
+        </ul>
+        <label class="check-row approve-row"><input type="checkbox" name="order_approved" id="order_approved"> <span id="approval-text">I approve the order amounts shown above.</span></label>
+        <p id="payment-note" class="payment-note"></p>
+        <div class="step-nav"><button type="button" class="btn btn-outline" data-back>← Back</button><button class="btn btn-accent" id="submit-btn" type="submit" disabled>Approve &amp; Continue</button></div>
+        <p id="submit-status" class="submit-status" aria-live="polite"></p>
+        <p class="fine"><button type="button" class="link-btn" id="clear-progress">Start over and clear my info from this device</button></p>
+      </div>
+    </form>
+
+    <div id="signup-done" class="signup-done" hidden>
+      <h2 tabindex="-1">You're signed up — thank you!</h2>
+      <p>Your signup reference is <strong id="done-ref"></strong>. Your signed agreement is on file. Scott will reach out within 1 business day to book your Access Day call.</p>
+      <p><a href="/signup/welcome/">See what to get ready before your Access Day call →</a></p>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-flex">
+      <div><strong style="color:#fff;">The Storage Owner's SEO Guy</strong><br>Local SEO cleanup for independent storage facilities — by an owner of seven.</div>
+      <div><a href="/agreement.html">Services Agreement</a><br>© 2026 · No contracts. Cancel anytime. Keep everything.</div>
+    </div>
+  </footer>
+  <script src="/js/signup-config.js"></script>
+  <script src="/js/signup.js"></script>
+</body>
+</html>

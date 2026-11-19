@@ -1,0 +1,10 @@
+{
+  "name": "storageownerseoguy",
+  "private": true,
+  "description": "Static site for The Storage Owner's SEO Guy. No build step; GitHub Pages serves the files as-is.",
+  "scripts": {
+    "test": "node --test tests/signup.test.js tests/worker.test.mjs",
+    "agreement-hash": "node _tools/agreement-hash.js",
+    "agreement-pdf": "node _tools/build-agreement-module.js && node _tools/build-agreement-pages.mjs && node _tools/build-agreement-pdf.mjs"
+  }
+}

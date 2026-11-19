@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Billing — Plan, Card &amp; Invoices | The Storage Owner's SEO Guy</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/signup.css">
+</head>
+<body data-page="billing">
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a class="brand" href="/">The Storage Owner's <span>SEO Guy</span></a>
+      <nav class="main-nav"><a href="/#pricing">Pricing</a><a href="/#faq">FAQ</a></nav>
+    </div>
+  </header>
+
+  <main class="signup-wrap container">
+    <p class="kicker">Your account</p>
+    <h1 class="signup-title">Plan, card &amp; invoices</h1>
+    <div class="signup-step">
+      <div id="billing-open" hidden>
+        <p>Opening Stripe's secure billing page…</p>
+      </div>
+      <div id="billing-done" hidden>
+        <p class="ok-line">&#10003; You're back from Stripe's billing page. Any change you made is saved there; plan changes start on your next billing date.</p>
+      </div>
+      <form id="billing-form" novalidate>
+        <p>Update your card, download invoices and receipts, or switch or cancel your monthly plan on Stripe's secure billing page. Enter the email address you signed up with and we'll email you a private link (good for one hour).</p>
+        <div class="form-row"><label for="billing_email">Email you signed up with *</label><input id="billing_email" name="email" type="email" autocomplete="email" required></div>
+        <p><button type="submit" class="btn btn-accent" id="billing-btn">Email me a secure billing link</button></p>
+      </form>
+      <p id="billing-status" class="sign-status" aria-live="polite"></p>
+      <p class="fine">Plans: Maintain $59/month or Maintain + Improve $99/month, per facility. Switching is free and takes effect on your next billing date; cancelling takes effect at the end of the billing month. Questions? <a href="mailto:storageownerseoguy@gmail.com">storageownerseoguy@gmail.com</a></p>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-flex">
+      <div><strong style="color:#fff;">The Storage Owner's SEO Guy</strong><br>Local SEO cleanup for independent storage facilities — by an owner of seven.</div>
+      <div><a href="/agreement.html">Services Agreement</a><br>© 2026 · No contracts. Cancel anytime. Keep everything.</div>
+    </div>
+  </footer>
+  <script src="/js/signup-config.js"></script>
+  <script src="/js/records.js"></script>
+</body>
+</html>
