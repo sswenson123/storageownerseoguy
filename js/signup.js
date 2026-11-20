@@ -383,14 +383,23 @@
 
     var planWrap = doc.getElementById('plan-options');
     planWrap.innerHTML = '';
+    var PLAN_INFO = {
+      none: { blurb: 'Just the build. Add a plan later anytime.', features: [] },
+      maintain: { blurb: 'Keep everything accurate.', features: ['Unlimited small changes (prices, hours, specials) in 2 business days', 'Hosting watched for you', 'Every listing re-checked monthly', 'One-page monthly report'] },
+      improve: { tag: 'Most complete', blurb: 'Everything in Maintain, plus growth.', features: ['A real improvement every month (town pages, size guide, seasonal)', 'Google Business Profile posts', 'Review engine managed', 'Rank tracking on searches that fill units'] }
+    };
+    var CHECK_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 16.2 5.3 12l-1.4 1.4 5.6 5.6L20.1 8.4 18.7 7z"/></svg>';
     config.plans.forEach(function (p) {
       var id = 'plan-' + p.id;
+      var info = PLAN_INFO[p.id] || { blurb: '', features: [] };
       var label = doc.createElement('label');
-      label.className = 'option-card';
+      label.className = 'option-card plan-card';
       label.setAttribute('for', id);
-      label.innerHTML = '<input type="radio" name="planId" id="' + id + '" value="' + p.id + '">' +
-        '<span class="option-body"><strong>' + escapeHtml(p.name) + '</strong><span class="option-price">' +
-        (p.price ? wholeDollars(p.price) + '/mo per facility' : '$0') + '</span></span>';
+      label.innerHTML = (info.tag ? '<span class="plan-tag">' + escapeHtml(info.tag) + '</span>' : '') +
+        '<span class="plan-head"><input type="radio" name="planId" id="' + id + '" value="' + p.id + '"><span class="plan-name">' + escapeHtml(p.name) + '</span></span>' +
+        '<span class="plan-price">' + (p.price ? wholeDollars(p.price) + '<small>/mo per facility</small>' : '$0<small>/mo</small>') + '</span>' +
+        '<span class="plan-blurb">' + escapeHtml(info.blurb) + '</span>' +
+        (info.features.length ? '<span class="feature-list">' + info.features.map(function (f) { return '<span>' + CHECK_SVG + escapeHtml(f) + '</span>'; }).join('') + '</span>' : '');
       planWrap.appendChild(label);
     });
 
@@ -449,13 +458,23 @@
     function showErrors(step, errors) {
       var box = doc.querySelector('[data-step="' + step + '"] .step-errors');
       form.querySelectorAll('[aria-invalid="true"]').forEach(function (el) { el.removeAttribute('aria-invalid'); });
+      form.querySelectorAll('.field-error').forEach(function (el) { el.remove(); });
       if (!errors.length) { box.hidden = true; box.innerHTML = ''; return; }
-      box.innerHTML = '<strong>Please fix:</strong><ul>' + errors.map(function (e) { return '<li>' + escapeHtml(e.message) + '</li>'; }).join('') + '</ul>';
+      box.innerHTML = '<strong>Please fix ' + (errors.length === 1 ? 'this' : 'these ' + errors.length) + ':</strong><ul>' + errors.map(function (e) { return '<li>' + escapeHtml(e.message) + '</li>'; }).join('') + '</ul>';
       box.hidden = false;
+      var first = null;
       errors.forEach(function (e) {
         var el = form.elements[e.field];
-        if (el && el.setAttribute) el.setAttribute('aria-invalid', 'true');
+        if (!el || !el.setAttribute) return;
+        el.setAttribute('aria-invalid', 'true');
+        var row = el.closest && el.closest('.form-row');
+        if (row && !row.querySelector('.field-error')) { var m = doc.createElement('p'); m.className = 'field-error'; m.textContent = e.message; row.appendChild(m); }
+        if (!first && el.offsetParent !== null) first = el;
       });
+      // the message must be seen: bring the first problem (or the summary) into view
+      var target = first || box;
+      if (target.scrollIntoView) target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      if (first && first.focus) { try { first.focus({ preventScroll: true }); } catch (x) { first.focus(); } }
     }
 
     function previewRows(s) {
@@ -472,7 +491,27 @@
       var s = computeSummary(state.data, config);
       var slot = doc.getElementById('preview-slot');
       if (slot) slot.innerHTML = previewRows(s);
+      renderAside();
       return s;
+    }
+
+    // Live order summary beside every step (the server quote takes over on the payment step)
+    function renderAside() {
+      var lines = doc.getElementById('aside-lines');
+      if (!lines) return;
+      var s = computeSummary(state.data, config);
+      var q = state.step === 4 && quote ? quote : null;
+      var rows = [];
+      var fac = q ? q.facilities : s.facilities;
+      var buildIncl = q ? q.buildIncluded : s.buildIncluded;
+      if (buildIncl) rows.push(['<span>' + escapeHtml(config.build.name) + (fac > 1 ? ' × ' + fac : '') + '</span>', '<span>' + (q ? cents(q.setupSubtotalCents) : money(s.setupSubtotal)) + '</span>']);
+      if (q && q.discountCents) rows.push(['<span>Promo ' + escapeHtml(q.promo ? q.promo.code : '') + '</span>', '<span>−' + cents(q.discountCents) + '</span>', 'discount']);
+      var plan = s.plan;
+      if (plan && plan.price) rows.push(['<span>' + escapeHtml(plan.name) + (fac > 1 ? ' × ' + fac : '') + '</span>', '<span>' + (q ? cents(q.monthlyCents) : money(s.monthlyTotal)) + '/mo</span>']);
+      if (!rows.length) rows.push(['<span>Nothing selected yet</span>', '<span></span>']);
+      lines.innerHTML = rows.map(function (r) { return '<div class="aside-line' + (r[2] ? ' ' + r[2] : '') + '">' + r[0] + r[1] + '</div>'; }).join('');
+      doc.getElementById('aside-due').textContent = q ? cents(q.dueTodayCents) : money(s.dueToday);
+      doc.getElementById('aside-monthly').textContent = plan && plan.price ? 'Monthly plan starts the day your new website goes live — not today.' : 'No monthly plan. You can add one later.';
     }
 
     function renderPromo() {
@@ -531,6 +570,16 @@
         doc.getElementById('signed-hash').textContent = 'Agreement fingerprint (SHA-256): ' + sg.agreementSha256 + ' · Signed PDF fingerprint: ' + sg.pdfSha256;
       }
       signBtn.disabled = !signReady() || signing;
+      renderSignaturePreview();
+    }
+
+    function renderSignaturePreview() {
+      var pv = doc.getElementById('sig-preview');
+      if (!pv) return;
+      var nm = form.elements.typed_name.value.trim();
+      pv.textContent = nm;
+      var title = form.elements.signer_title.value.trim();
+      doc.getElementById('sig-meta').textContent = nm ? nm + (title ? ', ' + title : '') + ' · ' + (state.data.legal_name || '') + ' · ' + new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
     }
 
     function ensureStarted() {
@@ -593,16 +642,20 @@
       }).catch(function () { b.disabled = false; setText(emailStatus, 'We couldn’t reach the signup service. Try again.', 'error'); });
     }
 
+    var verifying = false;
     function verifyCode() {
+      if (verifying || (state.sign && state.sign.emailVerified)) return;
       var code = form.elements.email_code.value.replace(/\D/g, '');
       if (code.length !== 6) { setText(emailStatus, 'Enter the 6-digit code from the email.', 'error'); return; }
       setText(emailStatus, 'Checking…');
+      verifying = true;
       api('POST', '/api/sign/email/verify', { ref: state.sign.ref, code: code }).then(function (r) {
+        verifying = false;
         if (!r.ok) { setText(emailStatus, (r.error || 'That code didn’t work.') + (r.attemptsLeft !== undefined ? ' (' + r.attemptsLeft + ' tries left)' : ''), 'error'); return; }
         state.sign.emailVerified = true; persist();
         setText(emailStatus, '');
         renderSign();
-      }).catch(function () { setText(emailStatus, 'We couldn’t reach the signup service. Try again.', 'error'); });
+      }).catch(function () { verifying = false; setText(emailStatus, 'We couldn’t reach the signup service. Try again.', 'error'); });
     }
 
     function signAgreement() {
@@ -682,7 +735,8 @@
         doc.getElementById('disclosure').innerHTML = '<ul>' + disclosureLines(quote, config).map(function (l) { return '<li>' + escapeHtml(l) + '</li>'; }).join('') + '</ul>';
         doc.getElementById('approval-text').textContent = quote.approval_text;
         btn.disabled = false;
-        btn.textContent = quote.dueTodayCents > 0 ? 'Approve & Continue to Secure Payment →' : 'Approve & Submit My Signup';
+        btn.textContent = quote.dueTodayCents > 0 ? 'Pay ' + cents(quote.dueTodayCents) + ' securely →' : 'Approve & Submit My Signup';
+        renderAside();
         doc.getElementById('payment-note').textContent = quote.dueTodayCents > 0
           ? 'Next you’ll go to Stripe’s secure page to pay exactly ' + cents(quote.dueTodayCents) + ' by card, Apple Pay, or Link. We never see your card number.'
           : 'Nothing is charged today. Scott will confirm your start date and send your monthly billing link when service begins.';
@@ -698,6 +752,7 @@
         li.classList.toggle('done', n2 < step);
         if (n2 === step) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current');
       });
+      renderAside();
       if (step === 1) renderSummary();
       if (step === 3) { renderSign(); ensureStarted(); }
       if (step === 4) { renderRecap(); renderPromo(); loadQuote(); }
@@ -762,14 +817,24 @@
     form.addEventListener('change', function (e) {
       readForm();
       if (state.step === 3) renderSign();
-      if (state.step === 1) renderSummary();
+      if (state.step === 1) renderSummary(); else renderAside();
       if (state.step === 4 && e.target && e.target.id === 'order_approved') {
         doc.getElementById('submit-btn').disabled = !quote;
       }
       persist();
     });
-    form.addEventListener('input', function () { if (state.step === 3) renderSign(); });
+    form.addEventListener('input', function (e) {
+      if (state.step === 3) renderSign();
+      // fixing a field clears its message right away
+      var t = e.target;
+      if (t && t.getAttribute && t.getAttribute('aria-invalid') === 'true') {
+        t.removeAttribute('aria-invalid');
+        var row = t.closest && t.closest('.form-row'); var fe = row && row.querySelector('.field-error'); if (fe) fe.remove();
+      }
+    });
     doc.getElementById('email_code').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); verifyCode(); } });
+    // six digits typed or pasted → verify right away (one less click)
+    doc.getElementById('email_code').addEventListener('input', function (e) { if (e.target.value.replace(/\D/g, '').length === 6) verifyCode(); });
     form.addEventListener('submit', function (e) { e.preventDefault(); if (state.step < 4) next(); else submit(); });
 
     function showDone(ref) {

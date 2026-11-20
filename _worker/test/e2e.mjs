@@ -111,8 +111,7 @@ async function verifyEmail(page, email) {
   await page.waitForFunction(() => /emailed a 6-digit code|couldn’t|Too many|isn’t/.test(document.getElementById('email-status').textContent), null, { timeout: 10000 }).catch(() => {});
   if (!/emailed a 6-digit code/.test(await page.textContent('#email-status'))) await page.click('#send-code');
   await page.waitForFunction(() => /emailed a 6-digit code/.test(document.getElementById('email-status').textContent));
-  await page.fill('#email_code', latestCode(email));
-  await page.click('#verify-code');
+  await page.fill('#email_code', latestCode(email)); // six digits → verified automatically, no extra click
   await page.waitForSelector('#email-verified:not([hidden])');
 }
 async function sign(page, name, title = 'Owner') {
