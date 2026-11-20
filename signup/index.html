@@ -71,14 +71,14 @@
         <div class="agreement-upfront">
           <span class="upfront-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5l-8-3zm-1.2 14.2-3.5-3.5 1.4-1.4 2.1 2.1 4.9-4.9 1.4 1.4-6.3 6.3z"/></svg></span>
           <span><strong>The agreement, up front.</strong> You own everything, no contracts, cancel the monthly anytime, and a <span data-cfg="guaranteeDays">60</span>-day satisfaction guarantee on the build.
-          <a href="/agreement.html" target="_blank" rel="noopener">Read the full agreement</a> · <a data-agreement-pdf href="/downloads/agreements/SOSG-Services-Agreement-2026-10-29.1.pdf" download>PDF</a></span>
+          <a href="/agreement.html" target="_blank" rel="noopener">Read the full agreement</a> · <a data-agreement-pdf href="/downloads/agreements/SOSG-Services-Agreement-2026-11-20.1.pdf" download>PDF</a></span>
         </div>
         <div class="step-nav"><span></span><button type="button" class="btn btn-accent btn-next" data-next>Continue to your information →</button></div>
       </div>
 
       <!-- STEP 2: your information -->
       <div class="signup-step" data-step="2" hidden>
-        <div class="step-head"><span class="step-pill">Step 2 of 4</span><h2>Your information</h2><p class="muted">This goes on your agreement. Use the email you check — your signing code goes there.</p></div>
+        <div class="step-head"><span class="step-pill">Step 2 of 4</span><h2>Your information</h2><p class="muted">This goes on your agreement. Use the email you check — your signed copy goes there.</p></div>
         <div class="step-errors" role="alert" hidden></div>
         <div class="field-group">
           <h3 class="group-title">You</h3>
@@ -126,15 +126,27 @@
 
       <!-- STEP 3: read & sign -->
       <div class="signup-step" data-step="3" hidden>
-        <div class="step-head"><span class="step-pill">Step 3 of 4</span><h2>Read &amp; sign the agreement</h2><p class="muted">Plain English, on purpose. You own everything, no contracts, cancel the monthly anytime, <span data-cfg="guaranteeDays">60</span>-day guarantee on the build.</p></div>
+        <div class="step-head"><span class="step-pill">Step 3 of 4</span><h2>Read &amp; sign the agreement</h2><p class="muted">Read it through, then sign at the bottom — just your name and two checkboxes. No codes, no extra emails.</p></div>
         <div class="step-errors" role="alert" hidden></div>
+        <div class="ag-glance">
+          <p class="ag-glance-title">The agreement at a glance</p>
+          <ul>
+            <li class="g-green"><strong>You own everything</strong> — website, domain, Google profile, every account. Stay or go, you keep it all.</li>
+            <li class="g-green"><strong>No contracts.</strong> Cancel a monthly plan anytime; it ends at the end of that billing month.</li>
+            <li class="g-blue"><strong><span data-cfg="guaranteeDays">60</span>-day guarantee</strong> on the build: revised until you're happy, or a full refund of the build fee.</li>
+            <li class="g-blue"><strong>Monthly billing starts when your site goes live</strong>, not today. Switch plans anytime, free.</li>
+            <li class="g-amber"><strong>You give access within 7 days</strong> so the work can start; nobody can promise Google rankings.</li>
+          </ul>
+          <p class="ag-glance-note">A plain-English summary only. The full agreement below is what you sign.</p>
+        </div>
+
         <div class="doc">
           <div class="doc-bar">
-            <span class="doc-name">Website &amp; SEO Services Agreement <span class="doc-ver">v<span id="agreement-version" data-cfg="agreementVersion">2026-10-29.1</span></span></span>
+            <span class="doc-name">Website &amp; SEO Services Agreement <span class="doc-ver">v<span id="agreement-version" data-cfg="agreementVersion">2026-11-20.1</span></span></span>
             <span class="agreement-tools">
-              <a data-agreement-pdf href="/downloads/agreements/SOSG-Services-Agreement-2026-10-29.1.pdf" download>PDF</a>
+              <a data-agreement-pdf href="/downloads/agreements/SOSG-Services-Agreement-2026-11-20.1.pdf" download>PDF</a>
               <button type="button" class="link-btn" id="print-agreement">Print</button>
-              <a href="/agreement.html" target="_blank" rel="noopener">Full screen</a>
+              <a href="/agreement.html" target="_blank" rel="noopener">Open in new tab</a>
             </span>
           </div>
           <div id="agreement-panel" class="agreement-panel" tabindex="0" aria-label="Services Agreement text">Loading the agreement…</div>
@@ -145,25 +157,8 @@
         <div id="sign-form" class="sign-card">
           <div class="sign-card-head"><h3>Sign here</h3><p>Signing for <strong id="sign-business"></strong></p></div>
 
-          <div class="sign-step" id="sign-step-email">
-            <span class="sign-num">1</span>
-            <div class="sign-body">
-              <h4>Enter the code we emailed you</h4>
-              <div id="email-verify-row">
-                <p class="fine">Sent to <strong id="email-target"></strong>. It arrives in a few seconds — check spam if you don't see it.</p>
-                <div class="code-row">
-                  <input id="email_code" name="email_code" class="code-input" inputmode="numeric" autocomplete="one-time-code" maxlength="7" pattern="[0-9 ]*" placeholder="000000" aria-label="6-digit code">
-                  <button type="button" class="btn btn-dark" id="verify-code">Verify</button>
-                </div>
-                <p class="resend"><button type="button" class="link-btn" id="send-code">Email me a code</button></p>
-              </div>
-              <p id="email-verified" class="ok-line" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 16.2 5.3 12l-1.4 1.4 5.6 5.6L20.1 8.4 18.7 7z"/></svg> Email confirmed</p>
-              <p id="email-status" class="promo-msg" aria-live="polite"></p>
-            </div>
-          </div>
-
           <div class="sign-step">
-            <span class="sign-num">2</span>
+            <span class="sign-num">1</span>
             <div class="sign-body">
               <h4>Type your name to sign</h4>
               <div class="row-2">
@@ -179,9 +174,9 @@
           </div>
 
           <div class="sign-step">
-            <span class="sign-num">3</span>
+            <span class="sign-num">2</span>
             <div class="sign-body">
-              <h4>Agree</h4>
+              <h4>Check both boxes</h4>
               <label class="check-row"><input type="checkbox" name="consent_esign" id="consent_esign"> <span id="consent-esign-text">I agree to use electronic records and electronic signatures.</span></label>
               <label class="check-row"><input type="checkbox" name="consent_authority" id="consent_authority"> <span id="consent-authority-text">I am authorized to sign for this business.</span></label>
               <label class="check-row small"><input type="checkbox" name="marketing_opt_out" id="marketing_opt_out"> Please don't use my business name or results in your marketing (Section 11).</label>
@@ -189,7 +184,8 @@
           </div>
 
           <button type="button" class="btn btn-accent btn-block btn-lg" id="sign-btn" disabled>Sign Agreement</button>
-          <p class="fine center">Clicking “Sign Agreement” signs the agreement above with the name you typed — the same as signing on paper.</p>
+          <p class="fine center">Clicking “Sign Agreement” signs the agreement above with the name you typed — the same as signing on paper. Your signed copy is emailed to <strong id="email-target"></strong>.</p>
+          <p id="email-status" class="promo-msg" aria-live="polite"></p>
         </div>
         <p id="sign-status" class="sign-status" aria-live="polite"></p>
 

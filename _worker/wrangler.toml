@@ -36,7 +36,7 @@ ALLOW_LAN_TEST_ORIGINS = "false"
 # told online signup opens soon). Open to the public by changing SIGNUP_OPEN and redeploying.
 SIGNUP_OPEN = "false"
 SIGNUP_ALLOWLIST = "storageownerseoguy@gmail.com"
-AGREEMENT_VERSION = "2026-10-29.1"
+AGREEMENT_VERSION = "2026-11-20.1"
 
 # Email codes + signed copies are sent with Resend from a verified domain.
 EMAIL_FROM = "The Storage Owner's SEO Guy <signup@storageownerseoguy.com>"

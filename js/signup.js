@@ -3,7 +3,7 @@
  * Two paths share it: public signup (/signup/) and private invitations (/signup/?invite=…).
  *
  * Security model: this page decides nothing. The signup Worker (config.signupApi, code in _worker/)
- *  - freezes the exact agreement shown in Step 3, verifies the Step 2 email with a one-time code,
+ *  - freezes the exact agreement shown in Step 3 (no email code: name + two consents + click signs),
  *    records the typed-name signature (two separate consents + the "Sign Agreement" click) with its own
  *    timestamp, and keeps the signed PDF + append-only audit trail privately under the signup reference,
  *  - prices the order itself (public prices, verified invitation prices, Stripe-validated promo codes),
@@ -540,14 +540,13 @@
     var emailStatus = doc.getElementById('email-status');
     var signBtn = doc.getElementById('sign-btn');
     var frozen = null;   // { agreement: {version, sha256, html}, consents }
-    var autoSentFor = null;
     var signing = false;
 
     function setText(el, t, cls) { el.textContent = t || ''; el.className = (el.className.split(' ')[0] || '') + (cls ? ' ' + cls : ''); }
 
     function signReady() {
       var sg = state.sign;
-      return !!(frozen && sg && sg.emailVerified && !sg.signed && form.elements.typed_name.value.trim().length >= 3 &&
+      return !!(frozen && sg && !sg.signed && frozen.emailConfigured && form.elements.typed_name.value.trim().length >= 3 &&
         form.elements.signer_title.value.trim().length >= 2 && form.elements.consent_esign.checked && form.elements.consent_authority.checked);
     }
 
@@ -561,9 +560,6 @@
       doc.getElementById('typed-name-hint').textContent = 'Type your name as you entered it: ' + (state.data.owner_name || '');
       if (!form.elements.signer_title.value) form.elements.signer_title.value = 'Owner';
       doc.getElementById('email-target').textContent = state.data.email || '';
-      var verified = !!(sg && sg.emailVerified);
-      doc.getElementById('email-verify-row').hidden = verified;
-      doc.getElementById('email-verified').hidden = !verified;
       if (signed) {
         doc.getElementById('signed-detail').textContent = 'Signed by ' + sg.signerName + (sg.signerTitle ? ', ' + sg.signerTitle : '') + ' on ' + new Date(sg.signedAt).toUTCString() +
           ' · Agreement ID ' + sg.agreementId + ' · Reference ' + sg.ref;
@@ -612,10 +608,8 @@
         doc.getElementById('consent-esign-text').textContent = r.consents.esign.text;
         doc.getElementById('consent-authority-text').textContent = r.consents.authority.text;
         if (!sameSignup) { form.elements.consent_esign.checked = false; form.elements.consent_authority.checked = false; form.elements.typed_name.value = ''; }
-        if (!r.emailConfigured && !r.signed) setText(emailStatus, 'Email verification isn’t switched on yet, so online signing is unavailable. Please contact Scott at storageownerseoguy@gmail.com.', 'error');
+        if (!r.emailConfigured && !r.signed) setText(emailStatus, 'Email delivery isn’t switched on yet, so online signing is unavailable. Please contact Scott at storageownerseoguy@gmail.com.', 'error');
         persist(); renderSign();
-        // signing made easy: the one-time code is emailed automatically (once per signup) when the agreement opens
-        if (state.sign && !state.sign.emailVerified && !state.sign.signed && r.emailConfigured && autoSentFor !== state.sign.ref) { autoSentFor = state.sign.ref; sendCode(); }
       }).catch(function () { panel.innerHTML = '<p class="step-errors">We couldn’t reach the signup service. Check your connection and try again.</p>'; renderSign(); });
     }
 
@@ -628,41 +622,11 @@
       }).catch(function () { panel.innerHTML = '<p>Please <a href="' + agreementPdfUrl(config) + '" target="_blank" rel="noopener">open the Services Agreement (PDF)</a>.</p>'; });
     }
 
-    function sendCode() {
-      var b = doc.getElementById('send-code');
-      b.disabled = true;
-      setText(emailStatus, 'Sending…');
-      api('POST', '/api/sign/email/send', { ref: state.sign.ref }).then(function (r) {
-        b.disabled = false;
-        if (r.alreadyVerified) { state.sign.emailVerified = true; persist(); renderSign(); return; }
-        if (!r.ok) { setText(emailStatus, r.error || 'We couldn’t send the code.', 'error'); return; }
-        b.textContent = 'Send a new code';
-        setText(emailStatus, 'We emailed a 6-digit code to ' + r.sentTo + '. It expires in 10 minutes.', 'ok');
-        doc.getElementById('email_code').focus();
-      }).catch(function () { b.disabled = false; setText(emailStatus, 'We couldn’t reach the signup service. Try again.', 'error'); });
-    }
-
-    var verifying = false;
-    function verifyCode() {
-      if (verifying || (state.sign && state.sign.emailVerified)) return;
-      var code = form.elements.email_code.value.replace(/\D/g, '');
-      if (code.length !== 6) { setText(emailStatus, 'Enter the 6-digit code from the email.', 'error'); return; }
-      setText(emailStatus, 'Checking…');
-      verifying = true;
-      api('POST', '/api/sign/email/verify', { ref: state.sign.ref, code: code }).then(function (r) {
-        verifying = false;
-        if (!r.ok) { setText(emailStatus, (r.error || 'That code didn’t work.') + (r.attemptsLeft !== undefined ? ' (' + r.attemptsLeft + ' tries left)' : ''), 'error'); return; }
-        state.sign.emailVerified = true; persist();
-        setText(emailStatus, '');
-        renderSign();
-      }).catch(function () { verifying = false; setText(emailStatus, 'We couldn’t reach the signup service. Try again.', 'error'); });
-    }
-
     function signAgreement() {
       readForm();
       if (signing) return;
       var errs = [];
-      if (!state.sign || !state.sign.emailVerified) errs.push({ field: 'email_code', message: 'Verify your email address first.' });
+      if (!state.sign || !frozen) errs.push({ field: 'typed_name', message: 'The agreement is still loading — wait a moment and try again.' });
       if (form.elements.typed_name.value.trim().length < 3) errs.push({ field: 'typed_name', message: 'Type your full legal name.' });
       if (form.elements.signer_title.value.trim().length < 2) errs.push({ field: 'signer_title', message: 'Enter your title or role.' });
       if (!form.elements.consent_esign.checked) errs.push({ field: 'consent_esign', message: 'Check the box to agree to electronic records and signatures.' });
@@ -775,8 +739,6 @@
       else if (t.matches('[data-back]')) { e.preventDefault(); readForm(); goTo(state.step - 1); }
       else if (t.matches('[data-goto]')) { e.preventDefault(); readForm(); goTo(Number(t.getAttribute('data-goto'))); }
       else if (t.id === 'sign-btn') { e.preventDefault(); signAgreement(); }
-      else if (t.id === 'send-code') { e.preventDefault(); sendCode(); }
-      else if (t.id === 'verify-code') { e.preventDefault(); verifyCode(); }
       else if (t.id === 'download-signed') { e.preventDefault(); downloadSigned(); }
       else if (t.id === 'print-agreement') { e.preventDefault(); win.open(agreementPdfUrl(config), '_blank', 'noopener'); }
       else if (t.id === 'promo-apply') {
@@ -832,9 +794,7 @@
         var row = t.closest && t.closest('.form-row'); var fe = row && row.querySelector('.field-error'); if (fe) fe.remove();
       }
     });
-    doc.getElementById('email_code').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); verifyCode(); } });
     // six digits typed or pasted → verify right away (one less click)
-    doc.getElementById('email_code').addEventListener('input', function (e) { if (e.target.value.replace(/\D/g, '').length === 6) verifyCode(); });
     form.addEventListener('submit', function (e) { e.preventDefault(); if (state.step < 4) next(); else submit(); });
 
     function showDone(ref) {

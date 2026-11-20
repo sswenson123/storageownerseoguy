@@ -300,3 +300,47 @@ select:disabled { opacity: .75; }
   .signup-hero .steps-progress li.current span.step-label { display: inline; }
   .signup-hero .steps-progress li.current { flex: 1.6; }
 }
+
+/* ===== Readable agreement (v2026-11-20.1): full page, colored sections, bullet points ===== */
+.signup-wide .agreement-panel, .agreement-panel { max-height: none; min-height: 0; overflow: visible; padding: 26px 28px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 1.02rem; line-height: 1.6; color: #1d2733; }
+@media (max-width: 560px) { .signup-wide .agreement-panel, .agreement-panel { max-height: none; padding: 16px 12px; font-size: 1rem; } }
+.ag { --c: #64748b; --t: #f4f6f8; }
+.ag .agreement-title, .signup-wide .agreement-panel .ag h1 { font-family: inherit; font-size: 1.7rem; font-weight: 900; letter-spacing: -0.02em; margin: 0 0 4px; color: var(--ink); }
+.ag > p.muted { font-size: .88rem; margin-bottom: 18px; color: var(--ink-soft); }
+.ag-parties { background: #14202e; color: #fff; border-radius: 12px; padding: 16px 20px; margin-bottom: 18px; }
+.ag-parties p, #agreement-text .ag-parties p { color: #e8edf3; margin: 0; font-size: 1rem; }
+.ag-parties strong { color: #fff; }
+.ag-sec { padding: 0; border: 1px solid var(--c); border-left-width: 6px; border-radius: 12px; margin: 0 0 16px; background: #fff; overflow: hidden; break-inside: avoid-page; }
+.ag-sec > h3, .signup-wide .agreement-panel .ag-sec > h3, #agreement-text .ag-sec > h3 { display: flex; align-items: center; gap: 10px; margin: 0; padding: 12px 16px; background: var(--t); color: var(--ink); font-family: inherit; font-size: 1.06rem; font-weight: 800; letter-spacing: 0; }
+.ag-num { flex: none; display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 28px; padding: 0 6px; border-radius: 999px; background: var(--c); color: #fff; font-size: .85rem; font-weight: 800; }
+.ag-dot { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.ag-sec > ul, .ag-sec > p { margin: 0; padding: 12px 18px 6px; }
+.ag-sec > p + ul { padding-top: 0; }
+.ag-sec ul, #agreement-text .ag-sec ul, .agreement-panel .ag-sec ul { list-style: none; margin-left: 0; }
+.ag-sec li, #agreement-text .ag-sec li, .agreement-panel .ag-sec li { position: relative; padding-left: 22px; margin: 0 0 10px; color: #1d2733; }
+.ag-sec li::before { content: ""; position: absolute; left: 4px; top: .62em; width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
+.ag-sec li strong { color: var(--ink); }
+.ag-sec > p, #agreement-text .ag-sec > p { color: #1d2733; margin-bottom: 10px; }
+.ag-green  { --c: #16a34a; --t: #ecfdf3; }
+.ag-blue   { --c: #2563eb; --t: #eef4ff; }
+.ag-amber  { --c: #d97706; --t: #fff7e8; }
+.ag-slate  { --c: #64748b; --t: #f3f5f8; }
+.ag-purple { --c: #7c3aed; --t: #f5f0ff; }
+.ag-teal   { --c: #0d9488; --t: #ecfbf8; }
+.ag-ink    { --c: #14202e; --t: #eef0f3; }
+
+/* plain-English summary (outside the signed text) */
+.ag-glance { border-radius: 14px; background: linear-gradient(135deg, #14202e, #1f3347); color: #fff; padding: 18px 22px; margin: 0 0 18px; }
+.ag-glance-title { font-weight: 900; font-size: 1.1rem; margin: 0 0 10px; color: #fff; }
+.ag-glance ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.ag-glance li { position: relative; padding-left: 30px; color: #e8edf3; line-height: 1.5; }
+.ag-glance li::before { content: "✓"; position: absolute; left: 0; top: 1px; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 900; color: #fff; }
+.ag-glance li.g-green::before { background: #16a34a; }
+.ag-glance li.g-blue::before { background: #2563eb; }
+.ag-glance li.g-amber::before { background: #d97706; content: "!"; }
+.ag-glance strong { color: #fff; }
+.ag-glance-note { margin: 12px 0 0; font-size: .82rem; color: #aab6c4; }
+.agreement-page .ag-glance { margin-top: 8px; }
+@media print { .ag-glance { display: none; } .ag-sec { border-left-width: 4px; } .ag-sec > h3 { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+.signup-layout > * { min-width: 0; }
+#email-target, .hash, #signed-detail { overflow-wrap: anywhere; word-break: break-word; }

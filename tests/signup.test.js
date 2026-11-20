@@ -326,7 +326,8 @@ test('agreement is frozen into the Worker exactly: same version and SHA-256 as a
 
 test('Section 15 describes first-party typed signing accurately (consent, copies, withdrawal, intent, record)', () => {
   const src = S.extractAgreementSource(fs.readFileSync(path.join(__dirname, '..', 'agreement.html'), 'utf8'));
-  for (const must of ['one-time code', 'types their full legal name and title', 'authorized to sign', 'clicks "Sign Agreement."', 'same legal effect as a handwritten signature', 'SHA-256 fingerprint', 'signing certificate page', 'not a check of government identification', 'download the signed PDF', 'paper', 'Withdrawing consent', 'Retention']) assert.ok(src.includes(must), must);
+  assert.ok(!src.includes('one-time code'), 'no email code is needed to sign');
+  for (const must of ['email address entered during signup', 'types their full legal name and title', 'authorized to sign', 'clicks "Sign Agreement."', 'same legal effect as a handwritten signature', 'SHA-256 fingerprint', 'signing certificate page', 'not a check of government identification', 'download the signed PDF', 'paper', 'Withdrawing consent', 'Retention']) assert.ok(src.includes(must), must);
 });
 
 test('worker settings match the site and contain no secrets; storage is private D1 + R2', () => {

@@ -106,13 +106,9 @@ async function step1(page, o = {}) {
   await page.waitForFunction(() => document.getElementById('agreement-version').textContent && /Services Agreement/.test(document.getElementById('agreement-panel').textContent));
   return v;
 }
-async function verifyEmail(page, email) {
-  // the code is emailed automatically when the agreement opens; ask again only if that didn't happen
-  await page.waitForFunction(() => /emailed a 6-digit code|couldn’t|Too many|isn’t/.test(document.getElementById('email-status').textContent), null, { timeout: 10000 }).catch(() => {});
-  if (!/emailed a 6-digit code/.test(await page.textContent('#email-status'))) await page.click('#send-code');
-  await page.waitForFunction(() => /emailed a 6-digit code/.test(document.getElementById('email-status').textContent));
-  await page.fill('#email_code', latestCode(email)); // six digits → verified automatically, no extra click
-  await page.waitForSelector('#email-verified:not([hidden])');
+async function verifyEmail(page) {
+  // no email code any more: the signing card is just name + title + two boxes + Sign
+  await page.waitForFunction(() => !document.getElementById('email_code') && !document.getElementById('send-code'));
 }
 async function sign(page, name, title = 'Owner') {
   await page.fill('#typed_name', name);
@@ -153,7 +149,7 @@ try {
     const r0 = await rec(sg0.ref);
     const segment = (() => { const h = fs.readFileSync(path.join(REPO, 'agreement.html'), 'utf8'); return h.slice(h.indexOf('<div id="agreement-text">'), h.indexOf('<!-- /agreement-text -->')); })();
     check('1 Agreement frozen at Step 2: version + SHA-256 = agreement.html = js/signup-config.js fingerprint', r0.agreement_version === CFG.agreementVersion && r0.agreement_sha256 === sha(segment) && r0.agreement_sha256 === CFG.agreementHash && r0.status === 'awaiting_email_verification', r0.agreement_sha256);
-    const shown = await page.$eval('#agreement-panel', (e) => e.innerText);
+    const shown = await page.$eval('#agreement-panel', (e) => e.textContent.replace(/\s+/g, ' '));
     check('1 Step 2 shows the complete agreement (all 15 sections + Schedule A + Signature Page)', ['1. Services and Fees', '8. Limitation of Liability', '15. Electronic Signatures and Electronic Records', 'Schedule A', 'Signature Page', 'storageownerseoguy@gmail.com'].every((s) => shown.includes(s)));
     const pdfHref = await page.getAttribute('[data-agreement-pdf]', 'href');
     const dl0 = await fetch(SITE + pdfHref);
@@ -164,7 +160,7 @@ try {
     check('1 Cannot reach payment unsigned', !(await page.isVisible('[data-step="4"]')));
     await shot(page, '1-step2-unsigned');
     await verifyEmail(page, v.email);
-    check('1 Email verified with a one-time code sent to the Step 1 address', (await rec(sg0.ref)).status === 'email_verified');
+    check('1 No email code step: the unsigned record simply waits for the signature', (await rec(sg0.ref)).status === 'awaiting_email_verification' && !latestCode(v.email));
     await sign(page, 'Pat Rivera', 'Owner');
     await page.waitForSelector('#signed-box:not([hidden])');
     await shot(page, '1-step2-signed');
@@ -179,7 +175,7 @@ try {
     const norm = (s) => s.replace(/\s+/g, '');
     const fullText = norm(AGREEMENT.blocks.map((b) => b.runs.map((r) => r.t).join('')).join(''));
     check('1 Signed PDF reproduces the ENTIRE agreement text, then the signing certificate', norm(text.replace(/Services Agreement v[^\n]*page \d+ of \d+/g, '').replace(/•/g, '')).includes(fullText) && text.includes('Signing Certificate'));
-    check('1 Certificate: name, title, business, facility, UTC time, agreement + signup IDs, agreement hash, consents, events', [r1.signer_name, 'Owner', v.legal_name, v.facility_name, r1.signed_at, r1.agreement_id, r1.ref, r1.agreement_sha256, 'Electronic records and signatures', 'Authority to sign', 'email_verified', 'agreement_signed'].every((s) => norm(text).includes(norm(s))));
+    check('1 Certificate: name, title, business, facility, UTC time, agreement + signup IDs, agreement hash, consents, events', [r1.signer_name, 'Owner', v.legal_name, v.facility_name, r1.signed_at, r1.agreement_id, r1.ref, r1.agreement_sha256, 'Electronic records and signatures', 'Authority to sign', 'entered by the signer', 'agreement_signed'].every((s) => norm(text).includes(norm(s))));
     const rows = await auditOf(r1.ref);
     const chain = await L.verifyAuditChain(rows);
     check('1 Append-only audit chain verifies end to end and its head is printed in the PDF', chain.ok && text.includes(rows.find((x) => x.event === 'agreement_signed').entry_hash) , rows.map((x) => x.event).join(' > '));
@@ -232,8 +228,9 @@ try {
     await sign(page, 'pat  RIVERA', 'Managing Member');
     await page.waitForSelector('#signed-box:not([hidden])');
     await shot(page, '2-mobile-signed');
-    const over = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
-    check('2 Mobile: signed (name matched ignoring case/spacing), no horizontal overflow', !over && (await rec((await lsSign(page)).ref)).status === 'signed');
+    const overList = await page.evaluate(() => { const W = document.documentElement.clientWidth; return document.documentElement.scrollWidth > W ? [...document.querySelectorAll('body *')].filter((e) => e.getBoundingClientRect().right > W + 1).slice(0, 6).map((e) => e.tagName + '.' + e.className + '#' + e.id + ' ' + Math.round(e.getBoundingClientRect().right)) : []; });
+    const mStatus = (await rec((await lsSign(page)).ref)).status;
+    check('2 Mobile: signed (name matched ignoring case/spacing), no horizontal overflow', !overList.length && mStatus === 'signed', mStatus + ' ' + overList.join(' | '));
     await page.click('[data-step="3"] [data-next]');
     await page.waitForSelector('#quote-slot table');
     await page.fill('#promo', 'FRIEND25'); await page.click('#promo-apply');
@@ -255,7 +252,7 @@ try {
     const st = await (await fetch(w2.url + '/api/sign/start', { method: 'POST', headers: { Origin: SITE, 'Content-Type': 'application/json' }, body: JSON.stringify({ info: INFO('noemail@example.com') }) })).json();
     const send = await fetch(w2.url + '/api/sign/email/send', { method: 'POST', headers: { Origin: SITE, 'Content-Type': 'application/json', Authorization: 'Bearer ' + st.token }, body: JSON.stringify({ ref: st.ref }) });
     const comp = await fetch(w2.url + '/api/sign/complete', { method: 'POST', headers: { Origin: SITE, 'Content-Type': 'application/json', Authorization: 'Bearer ' + st.token }, body: JSON.stringify({ ref: st.ref, agreementVersion: st.agreement.version, agreementSha256: st.agreement.sha256, typedName: 'Pat Lee', title: 'Owner', consentEsign: true, consentAuthority: true, signClicked: true, consentIds: { esign: st.consents.esign.id, authority: st.consents.authority.id } }) });
-    check('3 No email service configured → codes refused (503) and signing impossible', send.status === 503 && (await send.json()).code === 'email_not_configured' && comp.status === 403 && st.emailConfigured === false);
+    check('3 No email service configured → signing impossible (503: the signed copy can’t be emailed)', send.status === 503 && (await send.json()).code === 'email_not_configured' && comp.status === 503 && st.emailConfigured === false);
     await w2.mf.dispose();
     // no storage configured → everything refused (safe default)
     const w3 = new Miniflare({ modules, modulesRoot: path.join(W, 'src'), compatibilityDate: '2024-09-23', bindings: bindings(), port: WORKER_PORT + 3 });
@@ -270,7 +267,8 @@ try {
     // complete before email verification
     const b = await api('POST', '/api/sign/start', { info: INFO(`nv-${uniq()}@example.com`) });
     const nb = await api('POST', '/api/sign/complete', { ref: b.body.ref, agreementVersion: b.body.agreement.version, agreementSha256: b.body.agreement.sha256, typedName: 'Pat Lee', title: 'Owner', consentEsign: true, consentAuthority: true, signClicked: true, consentIds: { esign: b.body.consents.esign.id, authority: b.body.consents.authority.id } }, b.body.token);
-    check('3 Unverified email → signing refused (403 email_not_verified)', nb.status === 403 && nb.body.code === 'email_not_verified');
+    check('3 No email code needed: signing straight from the agreement works (200, signed)', nb.status === 200 && nb.body.signed === true, JSON.stringify(nb.body).slice(0, 200));
+    check('3 …and no code email was sent for it', !M.S.inbox.some((x) => /is \d{6}/.test(x.text) && /^nv-/.test(x.to[0])));
     // expired OTP
     const e1 = `exp-${uniq()}@example.com`;
     const e = await api('POST', '/api/sign/start', { info: INFO(e1) });
@@ -405,20 +403,16 @@ try {
     const { ctx, page } = await newPage();
     await page.goto(SITE + '/signup/');
     const v = await step1(page);
-    await page.waitForFunction(() => /emailed a 6-digit code/.test(document.getElementById('email-status').textContent));
-    check('6 Opening the agreement emails the code automatically (signing made easy)', !!latestCode(v.email));
-    M.S.opts.resendFail = true;
-    await page.click('#send-code');
-    await page.waitForFunction(() => /couldn’t send/.test(document.getElementById('email-status').textContent));
-    check('6 Email outage → clear message; nothing verified', (await rec((await lsSign(page)).ref)).status === 'awaiting_email_verification');
-    M.S.opts.resendFail = false;
-    await verifyEmail(page, v.email);
+    await verifyEmail(page);
+    await page.waitForTimeout(400);
+    check('6 Opening the agreement sends no code email and shows no code box (signing made easy)', !latestCode(v.email) && !(await page.$('#email_code')));
+    check('6 Agreement shows full page (no inner scroll box) with colored sections', await page.evaluate(() => { const p = document.getElementById('agreement-panel'); return getComputedStyle(p).maxHeight === 'none' && p.querySelectorAll('.ag-sec').length >= 17 && p.scrollHeight <= p.clientHeight + 2; }));
     // network failure on Sign → clear message, nothing signed; retry signs once
     let blocked = 0;
     await page.route(WORKER + '/api/sign/complete', (r) => { if (blocked++ === 0) return r.abort(); return r.continue(); });
     await sign(page, 'Pat Rivera');
     await page.waitForFunction(() => /Nothing was signed/.test(document.getElementById('sign-status').textContent));
-    check('6 Connection drop on Sign → "Nothing was signed — try again"', (await rec((await lsSign(page)).ref)).status === 'email_verified');
+    check('6 Connection drop on Sign → "Nothing was signed — try again"', (await rec((await lsSign(page)).ref)).status === 'awaiting_email_verification');
     await page.click('#sign-btn');
     await page.waitForSelector('#signed-box:not([hidden])');
     check('6 Retry signs exactly once', (await auditOf((await lsSign(page)).ref)).filter((x) => x.event === 'agreement_signed').length === 1);

@@ -13,12 +13,12 @@
   return {
     // Bump this whenever agreement.html wording changes (also AGREEMENT_VERSION in _worker/wrangler.toml),
     // then run: npm run agreement-hash && npm run agreement-pdf (refreezes the Worker's copy and the PDF).
-    agreementVersion: '2026-10-29.1',
+    agreementVersion: '2026-11-20.1',
 
     // SHA-256 of the agreement text in agreement.html (between its two markers). A unit test fails
     // if the text changes without updating this, so every signup record points to exact wording.
     // Changed the agreement? Bump agreementVersion, then run: npm run agreement-hash
-    agreementHash: 'ab4a0caa1c12a8d232283aab666bea9630510883c81603cf05806ba1602f7fd7',
+    agreementHash: '8ef358a68d1f558d6515d370022467da350f844da3ca816e6a047a9b1c4cf614',
 
     // Satisfaction guarantee length shown in the agreement (days after launch).
     guaranteeDays: 60,

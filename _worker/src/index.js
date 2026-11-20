@@ -4,7 +4,7 @@
  * First-party electronic signing (no outside signing service):
  *   1. /api/sign/start          freezes the exact agreement (version + SHA-256 + text) and the signer's
  *                               business details; returns a private bearer token for this signup.
- *   2. /api/sign/email/send     emails a one-time 6-digit code (only an HMAC of it is stored).
+ *   2. /api/sign/email/send     optional (legacy): emails a one-time 6-digit code; signing no longer requires it.
  *      /api/sign/email/verify   proves control of the Step 1 mailbox (10-minute, single-use, 5 tries).
  *   3. /api/sign/complete       typed full legal name + title + two separate consents + the click on
  *                               "Sign Agreement" → Worker timestamp → immutable PDF (full agreement +
@@ -13,7 +13,7 @@
  *                               the exact amounts the customer approved (one-time build only). Stripe
  *                               webhooks mark payment.
  *   5. /api/records/copy        lost link / after the 30-day token expires: emails the signed PDF(s) — only
- *                               ever to the verified address it was signed with. Same answer either way.
+ *                               ever to the email address on the signed record. Same answer either way.
  *   6. /api/monthly/status|checkout  launch-day monthly billing. Works only after YOU record the launch
  *                               (_tools/mark-launched.sh); the hourly cron then emails the customer a
  *                               private link to approve and start the plan (Stripe Checkout, subscription).
@@ -253,6 +253,7 @@ async function emailVerify(env, req, body) {
   return json({ ok: true, emailVerified: true });
 }
 
+const SIGNABLE_STATES = ['awaiting_email_verification', 'email_verified'];
 function signedResult(rec) { return json({ ...publicState(rec), already: true }); }
 
 async function completeSigning(env, req, body) {
@@ -261,9 +262,12 @@ async function completeSigning(env, req, body) {
   if (!rec) return fail('Not found.', 404);
   if (rec.expired) return expiredFail(rec);
   const i = info(rec);
+  // the signed copy is emailed to the address entered, so signing needs email delivery switched on
+  if (!SIGNED_STATES.includes(rec.status) && !emailConfigured(env)) return fail('Email isn’t switched on yet, so online signing is unavailable. Please contact Scott at storageownerseoguy@gmail.com.', 503, 'email_not_configured');
   if (SIGNED_STATES.includes(rec.status)) return namesMatch(body.typedName, rec.signer_name) ? signedResult(rec) : fail('This agreement is already signed.', 409, 'already_signed');
-  if (rec.status === 'awaiting_email_verification') return fail('Verify your email address first.', 403, 'email_not_verified');
-  if (rec.status !== 'email_verified' && rec.status !== 'signing') return fail('This signup can’t be signed. Please start again.', 409, 'bad_state');
+  // No email code is needed to sign (agreement 2026-11-20.1+): the signer is identified by the details entered,
+  // the typed name, the record of signing (IP, browser, time) and delivery of the signed copy to the email entered.
+  if (!SIGNABLE_STATES.includes(rec.status) && rec.status !== 'signing') return fail('This signup can’t be signed. Please start again.', 409, 'bad_state');
   // the exact agreement frozen at start, which must still be the text this Worker serves
   if (body.agreementVersion !== rec.agreement_version || body.agreementSha256 !== rec.agreement_sha256 || rec.agreement_sha256 !== AGREEMENT.sha256 || rec.agreement_version !== AGREEMENT.version) {
     await audit(env, rec.ref, 'sign_refused_agreement_changed', { sent_version: String(body.agreementVersion || '').slice(0, 40), sent_sha256: String(body.agreementSha256 || '').slice(0, 64) });
@@ -282,14 +286,14 @@ async function completeSigning(env, req, body) {
   const lease = randomToken(12);
   const startedAt = nowIso();
   const claim = await q(env, `UPDATE signups SET status = 'signing', signing_lease = ?, signing_started_at = ?, updated_at = ?
-    WHERE ref = ? AND (status = 'email_verified' OR (status = 'signing' AND signing_started_at < ?))`, lease, startedAt, startedAt, rec.ref, plus(-120)).run();
+    WHERE ref = ? AND (status IN ('awaiting_email_verification', 'email_verified') OR (status = 'signing' AND signing_started_at < ?))`, lease, startedAt, startedAt, rec.ref, plus(-120)).run();
   if (claim.meta.changes !== 1) {
     const now = await getRec(env, rec.ref);
     if (SIGNED_STATES.includes(now.status)) return signedResult(now);
     return fail('Your signature is already being saved. Wait a moment.', 409, 'signing_in_progress');
   }
   const release = async (why) => {
-    await q(env, "UPDATE signups SET status = 'email_verified', signing_lease = NULL, updated_at = ? WHERE ref = ? AND signing_lease = ?", nowIso(), rec.ref, lease).run();
+    await q(env, "UPDATE signups SET status = CASE WHEN email_verified_at IS NULL THEN 'awaiting_email_verification' ELSE 'email_verified' END, signing_lease = NULL, updated_at = ? WHERE ref = ? AND signing_lease = ?", nowIso(), rec.ref, lease).run();
     await audit(env, rec.ref, 'signing_failed', { reason: why });
   };
   let key = null;
@@ -618,7 +622,7 @@ async function handleStripeEvent(env, event) {
 }
 
 // ---------- copies of signed agreements (lost link, or after the 30-day token has expired) ----------
-// Anyone may ask; the PDF only ever goes to the verified address the agreement was signed with, and the
+// Anyone may ask; the PDF only ever goes to the email address on the signed agreement, and the
 // answer is the same whether or not anything matched (no way to learn who has signed).
 async function requestCopy(env, req, body, ctx) {
   const email = String(body.email || '').trim().toLowerCase();

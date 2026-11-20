@@ -174,7 +174,9 @@ export function signedAgreementPdf(agreement, c, prebuiltPages) {
     ['Electronic signature', `/s/ ${c.signer_name} — typed by the signer, adopted by clicking “Sign Agreement”`],
     ['Legal business name', c.legal_name],
     ['Facility', `${c.facility_name}, ${c.address}`],
-    ['Verified email', `${c.email} (control confirmed by one-time code at ${c.email_verified_at}; not an ID check)`],
+    c.email_verified_at
+      ? ['Verified email', `${c.email} (control confirmed by one-time code at ${c.email_verified_at}; not an ID check)`]
+      : ['Email', `${c.email} (entered by the signer; the signed copy is emailed to this address; not an ID check)`],
     ['Signing device', `IP ${c.ip_masked} · ${c.user_agent_summary}`]
   ]) blocks.push(kv(k, v));
   blocks.push({ type: 'h3', runs: [{ b: true, t: 'Consents given by the signer (each a separate box, unchecked by default)' }] });
